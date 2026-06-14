@@ -23,6 +23,15 @@ FIELDS = [
 TIER_NAMES = ["Entry-Level", "Mid-Range", "High-End", "Premium", "Workstation", "Ultra"]
 
 
+def _interpret(rank, total):
+    """Map a price-ascending rank (0..total-1) onto a tier name, spreading the
+    name list across however many clusters exist. Works for any k."""
+    if total <= 1:
+        return TIER_NAMES[0]
+    idx = int(rank / (total - 1) * (len(TIER_NAMES) - 1) + 1e-9)
+    return TIER_NAMES[min(idx, len(TIER_NAMES) - 1)]
+
+
 @transaction.atomic
 def run_training():
     """Train K-Means over all laptops, persist a new active ClusterModel + Clusters.
@@ -82,9 +91,9 @@ def run_training():
         by_label.items(),
         key=lambda kv: sum(r["price_idr"] for r in kv[1]) / len(kv[1]),
     )
+    total = len(ranked)
     label_to_name = {
-        lab: TIER_NAMES[min(i, len(TIER_NAMES) - 1)]
-        for i, (lab, _) in enumerate(ranked)
+        lab: _interpret(i, total) for i, (lab, _) in enumerate(ranked)
     }
 
     for lab, recs in by_label.items():

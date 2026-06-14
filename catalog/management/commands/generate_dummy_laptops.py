@@ -67,8 +67,20 @@ class Command(BaseCommand):
             else:
                 proc, tier = random.choice([p for p in PROCESSORS if not p[0].startswith("Apple")])
 
-            ram = random.choice(RAM_OPTIONS)
-            storage = random.choice(STORAGE_OPTIONS)
+            # RAM/storage track tier so specs form coherent profiles (not random
+            # noise) — this is what lets K-Means find meaningful clusters.
+            if tier <= 3:
+                ram = random.choice([4, 8, 8, 16])
+                storage = random.choice([256, 512])
+            elif tier <= 5:
+                ram = random.choice([8, 16, 16])
+                storage = random.choice([512, 512, 1024])
+            elif tier <= 7:
+                ram = random.choice([16, 16, 32])
+                storage = random.choice([512, 1024])
+            else:
+                ram = random.choice([16, 32, 32, 64])
+                storage = random.choice([1024, 2048])
             storage_type = "SSD" if random.random() < 0.9 else "HDD"
 
             # dedicated VGA more likely on high tiers; Apple stays integrated
@@ -80,7 +92,12 @@ class Command(BaseCommand):
             vga = random.choice(DEDICATED_VGA if vga_type == "dedicated" else INTEGRATED_VGA)
 
             screen = random.choice(SCREEN_OPTIONS)
-            battery = round(random.uniform(4.0, 18.0), 1)
+            # thin-and-light (low tier, integrated) tends to last longer; gaming/
+            # workstation (high tier, dedicated) tends to drain faster.
+            if vga_type == "dedicated" or tier >= 8:
+                battery = round(random.uniform(4.0, 9.0), 1)
+            else:
+                battery = round(random.uniform(8.0, 18.0), 1)
 
             # price model: base scales with tier, ram, storage, dedicated vga, brand premium
             base = 2_500_000

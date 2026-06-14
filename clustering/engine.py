@@ -5,7 +5,15 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 NUMERIC = ["processor_tier", "ram_gb", "storage_gb", "screen_inch", "battery_hours", "price_idr"]
-ONEHOT = ["brand", "vga_type", "storage_type"]
+# Clustering attributes per thesis methodology: RAM, prosesor, VGA, penyimpanan,
+# layar, baterai, harga. Brand is intentionally excluded so K-Means groups by
+# specification/price, not by manufacturer.
+ONEHOT = ["vga_type", "storage_type"]
+# A one-hot category swap flips two columns (1->0 and 0->1), which would cost
+# 2.0 in squared Euclidean distance vs at most 1.0 for any [0,1]-scaled numeric
+# feature. Weighting each one-hot column by 1/sqrt(2) caps a category swap at
+# 1.0 so categoricals don't dominate K-Means clustering / cluster routing.
+ONEHOT_WEIGHT = 1.0 / np.sqrt(2.0)
 
 
 def _iqr_clip(values):
@@ -50,7 +58,7 @@ def preprocess(records, scaler_params=None, feature_order=None):
             row.append(min(max(v, 0.0), 1.0))
         for col in ONEHOT:
             for cat in scaler_params["categories"][col]:
-                row.append(1.0 if str(r[col]) == cat else 0.0)
+                row.append(ONEHOT_WEIGHT if str(r[col]) == cat else 0.0)
         matrix.append(row)
     return matrix, scaler_params, feature_order
 

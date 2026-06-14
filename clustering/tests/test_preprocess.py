@@ -1,4 +1,4 @@
-from clustering.engine import preprocess
+from clustering.engine import ONEHOT_WEIGHT, preprocess
 
 RECORDS = [
     {"brand": "ASUS", "processor_tier": 3, "ram_gb": 8, "storage_gb": 256,
@@ -37,3 +37,24 @@ def test_preprocess_reuses_scaler_for_new_record():
     matrix, sp2, fo2 = preprocess(new, scaler_params=scaler_params, feature_order=feature_order)
     assert fo2 == feature_order
     assert len(matrix[0]) == len(feature_order)
+
+
+def test_brand_excluded_from_features():
+    # Per thesis methodology, brand is NOT a clustering attribute; otherwise the
+    # brand one-hot dims dominate and K-Means groups by manufacturer.
+    _, _, feature_order = preprocess(RECORDS)
+    assert not any(f.startswith("brand=") for f in feature_order)
+
+
+def test_onehot_columns_weighted_to_match_numeric_scale():
+    # A category swap flips two one-hot columns; weighting each by 1/sqrt(2)
+    # caps the squared-distance cost of a swap at 1.0, on par with a numeric
+    # feature, so categoricals don't dominate distance.
+    matrix, _, feature_order = preprocess(RECORDS)
+    onehot_idx = [i for i, f in enumerate(feature_order) if "=" in f]
+    for row in matrix:
+        for i in onehot_idx:
+            assert row[i] in (0.0, ONEHOT_WEIGHT)
+    # squared cost of swapping one category (1->0 and 0->1) == 1.0
+    assert abs(2 * ONEHOT_WEIGHT**2 - 1.0) < 1e-9
+
