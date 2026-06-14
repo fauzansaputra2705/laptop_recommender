@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Clustering &amp; Training{% endblock %}
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-bold sm:text-3xl">Clustering &amp; Training</h1>
+  <button type="button"
+          hx-post="{% url 'clustering:train' %}"
+          hx-target="#train-output"
+          hx-swap="innerHTML"
+          class="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+    <span class="htmx-indicator inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+    Train / Re-cluster
+  </button>
+</div>
+
+<div id="train-output">
+  {% if model %}
+    {% include "clustering/_train_result.html" %}
+  {% else %}
+    <div class="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+      Belum ada model aktif. Tambahkan data laptop di Katalog lalu klik <span class="font-medium">Train</span>.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

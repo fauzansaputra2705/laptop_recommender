@@ -1,0 +1,62 @@
+{% load humanize %}
+<div class="space-y-6">
+  <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+    Training selesai. K optimal = <span class="font-semibold">{{ model.k_optimal }}</span>,
+    Silhouette Score = <span class="mono font-semibold">{{ model.silhouette_score|floatformat:3 }}</span>.
+  </div>
+
+  <div class="rounded-lg border border-slate-200 bg-white p-4 text-sm dark:border-slate-700 dark:bg-slate-800">
+    <div class="flex flex-wrap gap-x-8 gap-y-2">
+      <div><span class="text-slate-500">K optimal:</span> <span class="mono font-medium">{{ model.k_optimal }}</span></div>
+      <div><span class="text-slate-500">Silhouette:</span> <span class="mono font-medium">{{ model.silhouette_score|floatformat:3 }}</span></div>
+      <div><span class="text-slate-500">Dilatih:</span> {{ model.created_at|date:"d M Y H:i" }}</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <figure class="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+      <div style="aspect-ratio: 5 / 3.5;">
+        {% if model.elbow_plot %}<img src="{{ model.elbow_plot.url }}" alt="Elbow plot, WCSS vs K, K optimal = {{ model.k_optimal }}" class="h-full w-full object-contain">{% endif %}
+      </div>
+      <figcaption class="mt-2 text-center text-xs text-slate-500">Elbow Method — K optimal = {{ model.k_optimal }}</figcaption>
+    </figure>
+    <figure class="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+      <div style="aspect-ratio: 5 / 3.5;">
+        {% if model.silhouette_plot %}<img src="{{ model.silhouette_plot.url }}" alt="Silhouette Score vs K, tertinggi di K = {{ model.k_optimal }}" class="h-full w-full object-contain">{% endif %}
+      </div>
+      <figcaption class="mt-2 text-center text-xs text-slate-500">Silhouette Score — tertinggi di K = {{ model.k_optimal }}</figcaption>
+    </figure>
+  </div>
+
+  <div>
+    <h2 class="mb-2 text-lg font-semibold">Interpretasi Cluster</h2>
+    <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <table class="min-w-full text-sm">
+        <thead class="border-b border-slate-200 bg-slate-50 text-left dark:border-slate-700 dark:bg-slate-900">
+          <tr>
+            <th class="px-4 py-3 font-semibold">Label</th>
+            <th class="px-4 py-3 font-semibold">Interpretasi</th>
+            <th class="px-4 py-3 font-semibold">Anggota</th>
+            <th class="px-4 py-3 font-semibold">Rata-rata Harga</th>
+            <th class="px-4 py-3 font-semibold">Rata-rata RAM</th>
+            <th class="px-4 py-3 font-semibold">Rata-rata Tier</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+          {% for c in clusters %}
+            <tr>
+              <td class="mono px-4 py-3">{{ c.label }}</td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900 dark:text-sky-200">{{ c.interpretation }}</span>
+              </td>
+              <td class="mono px-4 py-3">{{ c.member_count }}</td>
+              <td class="mono px-4 py-3">Rp{{ c.summary.avg_price|intcomma }}</td>
+              <td class="mono px-4 py-3">{{ c.summary.avg_ram }}GB</td>
+              <td class="mono px-4 py-3">{{ c.summary.avg_tier }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
