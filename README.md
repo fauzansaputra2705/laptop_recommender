@@ -31,6 +31,13 @@ Lima app Django dengan engine data-mining murni (tanpa dependensi Django) agar m
 **Invariant penting:** rekomendasi selalu memakai ulang `ClusterModel.scaler_params` + `feature_order`
 dari training, sehingga vektor preferensi berada di ruang fitur yang sama dengan data laptop.
 
+**Routing cluster (dua peran input):** spesifikasi minimum yang diisi user dipakai untuk dua hal yang
+berbeda. (1) Untuk **relevansi/Precision@K** — laptop relevan jika memenuhi semua minimum + dalam
+budget. (2) Untuk **routing cluster + cosine** — minimum di-*floor* ke profil target peran
+(`recommender/profiles.py`) supaya minimum yang terlalu rendah tidak mengarahkan rekomendasi ke
+cluster yang lebih murah dari kebutuhan peran; harga memakai titik tengah budget. Angka profil
+target diisi default masuk akal dan sebaiknya disesuaikan setelah wawancara PT (Bagian 4 no.18).
+
 ## Prasyarat
 
 - PostgreSQL berjalan secara lokal.

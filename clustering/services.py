@@ -24,10 +24,16 @@ TIER_NAMES = ["Entry-Level", "Mid-Range", "High-End", "Premium", "Workstation", 
 
 
 def _interpret(rank, total):
-    """Map a price-ascending rank (0..total-1) onto a tier name, spreading the
-    name list across however many clusters exist. Works for any k."""
+    """Map a price-ascending rank (0..total-1) onto a tier name.
+
+    When clusters fit within the name list (the usual case) names are assigned
+    contiguously from the cheapest end (Entry-Level, Mid-Range, High-End, ...)
+    so labels read intuitively. If there are more clusters than names, the list
+    is stretched proportionally. Works for any k."""
     if total <= 1:
         return TIER_NAMES[0]
+    if total <= len(TIER_NAMES):
+        return TIER_NAMES[rank]
     idx = int(rank / (total - 1) * (len(TIER_NAMES) - 1) + 1e-9)
     return TIER_NAMES[min(idx, len(TIER_NAMES) - 1)]
 
