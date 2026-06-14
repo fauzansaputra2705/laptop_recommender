@@ -7,6 +7,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("clustering/", include("clustering.urls")),
+    path("catalog/", include("catalog.urls")),
+    path("recommend/", include("recommender.urls")),
+    path("", include("core.urls")),
 ]
 
 if settings.DEBUG:

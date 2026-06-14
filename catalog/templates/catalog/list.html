@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Katalog Laptop{% endblock %}
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-bold sm:text-3xl">Katalog Laptop</h1>
+  <a href="{% url 'catalog:create' %}" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">+ Tambah Laptop</a>
+</div>
+
+{% if laptops %}
+  <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <table class="min-w-full text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50 text-left dark:border-slate-700 dark:bg-slate-900">
+        <tr>
+          <th class="px-4 py-3 font-semibold">Merek</th>
+          <th class="px-4 py-3 font-semibold">Model</th>
+          <th class="px-4 py-3 font-semibold">Tier</th>
+          <th class="px-4 py-3 font-semibold">RAM</th>
+          <th class="px-4 py-3 font-semibold">Storage</th>
+          <th class="px-4 py-3 font-semibold">Harga</th>
+          <th class="px-4 py-3 font-semibold">Cluster</th>
+          <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for lap in laptops %}
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <td class="px-4 py-3">{{ lap.brand }}</td>
+            <td class="px-4 py-3">{{ lap.model }}</td>
+            <td class="mono px-4 py-3">{{ lap.processor_tier }}</td>
+            <td class="mono px-4 py-3">{{ lap.ram_gb }}GB</td>
+            <td class="mono px-4 py-3">{{ lap.storage_gb }}GB {{ lap.storage_type }}</td>
+            <td class="mono px-4 py-3">Rp{{ lap.price_idr|intcomma }}</td>
+            <td class="px-4 py-3">{% if lap.cluster_label is not None %}{{ lap.cluster_label }}{% else %}<span class="text-slate-400">-</span>{% endif %}</td>
+            <td class="px-4 py-3 text-right">
+              <a href="{% url 'catalog:update' lap.pk %}" class="font-medium text-indigo-600 hover:underline">Edit</a>
+              <a href="{% url 'catalog:delete' lap.pk %}" class="ml-3 font-medium text-red-600 hover:underline">Hapus</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+    <div class="mt-4 flex items-center justify-center gap-2 text-sm">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800">&larr; Sebelumnya</a>{% endif %}
+      <span class="text-slate-500">Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800">Selanjutnya &rarr;</a>{% endif %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">
+    Belum ada data laptop. Tambah manual atau jalankan <span class="mono">generate_dummy_laptops</span>.
+  </div>
+{% endif %}
+{% endblock %}

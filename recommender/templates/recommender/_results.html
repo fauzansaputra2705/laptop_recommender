@@ -1,0 +1,66 @@
+{% load humanize %}
+<div class="space-y-4">
+  <div class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+    <span class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-800 dark:bg-sky-900 dark:text-sky-200">
+      Cluster: {{ rec.selected_cluster.interpretation }} (#{{ rec.selected_cluster.label }})
+    </span>
+    {% if rec.precision_at_k >= 0.8 %}
+      <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+        Precision@{{ rec.k_value }}: {{ rec.precision_at_k }}
+      </span>
+    {% elif rec.precision_at_k >= 0.5 %}
+      <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+        Precision@{{ rec.k_value }}: {{ rec.precision_at_k }}
+      </span>
+    {% else %}
+      <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200">
+        Precision@{{ rec.k_value }}: {{ rec.precision_at_k }}
+      </span>
+    {% endif %}
+  </div>
+
+  {% if rec.results %}
+    {% if rec.results|length < rec.k_value %}
+      <p class="text-xs text-slate-500">Hanya {{ rec.results|length }} laptop tersedia di cluster ini.</p>
+    {% endif %}
+    <div class="space-y-3">
+      {% for r in rec.results %}
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-semibold">{{ r.name }}</h3>
+              <p class="text-sm text-slate-500">{{ r.brand }}</p>
+            </div>
+            <div class="text-right">
+              <p class="mono text-base font-semibold">Rp{{ r.price_idr|intcomma }}</p>
+              <p class="mono text-xs text-slate-500">sim {{ r.similarity }}</p>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
+            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">Tier {{ r.processor_tier }}</span>
+            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">RAM {{ r.ram_gb }}GB</span>
+            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.storage_gb }}GB {{ r.storage_type }}</span>
+            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.screen_inch }}"</span>
+            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.vga_type }}</span>
+            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.battery_hours }} jam</span>
+          </div>
+          <div class="mt-3">
+            {% if r.relevant %}
+              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                &#10003; Memenuhi semua syarat
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                Tidak memenuhi semua syarat minimum
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+      Belum ada laptop di cluster terpilih. Tambahkan data laptop lalu latih ulang cluster.
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,73 @@
+{% load static %}
+<form hx-post="{% url 'recommender:recommend' %}" hx-target="#results" hx-swap="innerHTML"
+      class="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div role="alert" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <div>
+    <label for="{{ form.role_target.id_for_label }}" class="mb-1 block text-sm font-medium">Peran Karyawan <span class="text-red-600">*</span></label>
+    {{ form.role_target }}
+    {% if form.role_target.errors %}<p role="alert" class="mt-1 text-xs text-red-600">{{ form.role_target.errors|striptags }}</p>{% endif %}
+  </div>
+
+  <fieldset class="rounded-md border border-slate-200 p-3 dark:border-slate-700">
+    <legend class="px-1 text-sm font-semibold">Budget (Rp)</legend>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label for="{{ form.budget_min_idr.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Minimum *</label>
+        {{ form.budget_min_idr }}
+      </div>
+      <div>
+        <label for="{{ form.budget_max_idr.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Maksimum *</label>
+        {{ form.budget_max_idr }}
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="rounded-md border border-slate-200 p-3 dark:border-slate-700">
+    <legend class="px-1 text-sm font-semibold">Spesifikasi Minimum</legend>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label for="{{ form.min_ram_gb.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">RAM (GB) *</label>
+        {{ form.min_ram_gb }}
+      </div>
+      <div>
+        <label for="{{ form.min_processor_tier.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Tier Prosesor 1-10 *</label>
+        {{ form.min_processor_tier }}
+      </div>
+      <div>
+        <label for="{{ form.min_storage_gb.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Storage (GB) *</label>
+        {{ form.min_storage_gb }}
+      </div>
+      <div>
+        <label for="{{ form.storage_type.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Tipe Storage</label>
+        {{ form.storage_type }}
+      </div>
+      <div>
+        <label for="{{ form.min_screen_inch.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Layar (inci)</label>
+        {{ form.min_screen_inch }}
+      </div>
+      <div>
+        <label for="{{ form.min_battery_hours.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Baterai (jam)</label>
+        {{ form.min_battery_hours }}
+      </div>
+      <div>
+        <label for="{{ form.vga_type.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Tipe VGA</label>
+        {{ form.vga_type }}
+      </div>
+      <div>
+        <label for="{{ form.brand_preference.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Merek</label>
+        {{ form.brand_preference }}
+      </div>
+    </div>
+  </fieldset>
+
+  <button type="submit"
+          class="flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+    <span class="htmx-indicator inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+    Cari Rekomendasi
+  </button>
+</form>

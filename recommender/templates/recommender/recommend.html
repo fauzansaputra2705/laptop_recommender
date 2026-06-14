@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Cari Rekomendasi Laptop{% endblock %}
+{% block content %}
+<h1 class="mb-6 text-2xl font-bold sm:text-3xl">Cari Rekomendasi Laptop</h1>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+  <div class="lg:col-span-5">
+    {% include "recommender/_form.html" %}
+  </div>
+  <div class="lg:col-span-7">
+    <div id="results" class="min-h-[20rem] rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      Isi preferensi di sebelah kiri lalu klik <span class="font-medium">Cari Rekomendasi</span> untuk melihat Top-5 laptop.
+    </div>
+  </div>
+</div>
+{% endblock %}
