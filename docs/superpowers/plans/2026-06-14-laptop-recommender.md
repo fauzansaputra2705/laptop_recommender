@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.12, `uv`, Django 5.x, PostgreSQL (psycopg + dj-database-url), HTMX + FlyonUI + Tailwind (CDN), scikit-learn / pandas / numpy, django-allauth (Google OAuth), matplotlib, pytest + pytest-django.
 
+**Design System:** All UI tasks (T8, T12, T13, T14, T15) MUST follow `design-system/MASTER.md`. Before building a page with an override file, read it first — `design-system/pages/recommend.md` (T12), `design-system/pages/clustering.md` (T8/T15). Page rules override Master. Key non-negotiables: semantic color tokens (no raw hex), SVG icons only (no emoji), contrast ≥4.5:1 both themes, visible focus rings, labels not placeholders, 44px touch targets, reserve space for async swaps (no CLS), respect `prefers-reduced-motion`.
+
 ---
 
 ## File Structure
