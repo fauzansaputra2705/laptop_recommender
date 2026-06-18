@@ -1,38 +1,8 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load datatable_tags humanize %}
 {% block title %}Riwayat Rekomendasi{% endblock %}
 {% block content %}
 <h1 class="mb-6 text-2xl font-bold sm:text-3xl">Riwayat Rekomendasi</h1>
-{% if recommendations %}
-  <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-    <table class="min-w-full text-sm">
-      <thead class="border-b border-slate-200 bg-slate-50 text-left dark:border-slate-700 dark:bg-slate-900">
-        <tr>
-          <th class="px-4 py-3 font-semibold">Tanggal</th>
-          <th class="px-4 py-3 font-semibold">Peran</th>
-          <th class="px-4 py-3 font-semibold">Budget Maks</th>
-          <th class="px-4 py-3 font-semibold">Cluster</th>
-          <th class="px-4 py-3 font-semibold">Precision@K</th>
-          <th class="px-4 py-3 font-semibold">Top-N</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-        {% for rec in recommendations %}
-          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-            <td class="px-4 py-3 text-slate-500">{{ rec.created_at|date:"d M Y H:i" }}</td>
-            <td class="px-4 py-3">{{ rec.preference.get_role_target_display }}</td>
-            <td class="mono px-4 py-3">Rp{{ rec.preference.budget_max_idr|intcomma }}</td>
-            <td class="px-4 py-3">{{ rec.selected_cluster.interpretation }}</td>
-            <td class="mono px-4 py-3">{{ rec.precision_at_k }}</td>
-            <td class="mono px-4 py-3">{{ rec.results|length }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% else %}
-  <div class="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">
-    Belum ada riwayat. <a href="{% url 'recommender:recommend' %}" class="font-medium text-indigo-600 hover:underline">Buat rekomendasi pertama</a>.
-  </div>
-{% endif %}
+
+{% datatable %}
 {% endblock %}
