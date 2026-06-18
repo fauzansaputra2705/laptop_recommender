@@ -12,7 +12,7 @@
       {% if page_obj.number > 1 %}
         <a href="#"
            hx-get="{{ request_path }}?page=1{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
-           hx-target="#datatable-wrapper"
+           hx-target="#datatable-content"
            hx-swap="innerHTML"
            class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
            title="Halaman pertama">
@@ -24,7 +24,7 @@
       {% if page_obj.has_previous %}
         <a href="#"
            hx-get="{{ request_path }}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
-           hx-target="#datatable-wrapper"
+           hx-target="#datatable-content"
            hx-swap="innerHTML"
            class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
           &lsaquo;
@@ -38,7 +38,7 @@
         {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
           <a href="#"
              hx-get="{{ request_path }}?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
-             hx-target="#datatable-wrapper"
+             hx-target="#datatable-content"
              hx-swap="innerHTML"
              class="rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
             {{ num }}
@@ -46,7 +46,7 @@
         {% elif num == 1 or num == page_obj.paginator.num_pages %}
           <a href="#"
              hx-get="{{ request_path }}?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
-             hx-target="#datatable-wrapper"
+             hx-target="#datatable-content"
              hx-swap="innerHTML"
              class="rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
             {{ num }}
@@ -60,7 +60,7 @@
       {% if page_obj.has_next %}
         <a href="#"
            hx-get="{{ request_path }}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
-           hx-target="#datatable-wrapper"
+           hx-target="#datatable-content"
            hx-swap="innerHTML"
            class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
           &rsaquo;
@@ -71,7 +71,7 @@
       {% if page_obj.number < page_obj.paginator.num_pages %}
         <a href="#"
            hx-get="{{ request_path }}?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
-           hx-target="#datatable-wrapper"
+           hx-target="#datatable-content"
            hx-swap="innerHTML"
            class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
            title="Halaman terakhir">
