@@ -1,48 +1,50 @@
 {# Full datatable component. Receives: columns, page_obj, search, sort_key, sort_dir, per_page, per_page_options, request_path, total_count, is_htmx #}
 {% load datatable_tags humanize %}
-<div id="datatable-wrapper">
-  {# ─── Search + Per Page controls ─── #}
-  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <div class="relative max-w-sm flex-1">
-      <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      <input type="text"
-             id="datatable-search"
-             value="{{ search }}"
-             placeholder="Cari..."
-             hx-get="{{ request_path }}"
-             hx-trigger="keyup changed delay:300ms, search"
-             hx-include="#datatable-controls"
-             hx-target="#datatable-wrapper"
-             hx-swap="innerHTML"
-             class="w-full rounded-md border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-    </div>
-    <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-      <span>{{ total_count }} data</span>
-      <span class="text-slate-300 dark:text-slate-600">|</span>
-      <label for="per-page-select" class="sr-only">Per halaman</label>
-      <select id="per-page-select"
-              hx-get="{{ request_path }}"
-              hx-trigger="change"
-              hx-include="#datatable-controls"
-              hx-target="#datatable-wrapper"
-              hx-swap="innerHTML"
-              class="rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800">
-        {% for opt in per_page_options %}
-          <option value="{{ opt }}" {% if opt == per_page %}selected{% endif %}>{{ opt }}/halaman</option>
-        {% endfor %}
-      </select>
-    </div>
+{# ─── Search + Per Page controls (outside swap target, stays stable) ─── #}
+<div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div class="relative max-w-sm flex-1">
+    <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="text"
+           id="datatable-search"
+           name="search"
+           value="{{ search }}"
+           placeholder="Cari..."
+           hx-get="{{ request_path }}"
+           hx-trigger="keyup changed delay:300ms, search"
+           hx-include="#datatable-controls"
+           hx-target="#datatable-content"
+           hx-swap="innerHTML"
+           class="w-full rounded-md border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
   </div>
-
-  {# Hidden form for hx-include to collect all controls #}
-  <div id="datatable-controls" class="hidden">
-    <input type="hidden" name="search" value="{{ search }}">
-    <input type="hidden" name="per_page" value="{{ per_page }}">
-    {% if sort_key %}<input type="hidden" name="sort" value="{{ sort_key }}">{% endif %}
-    {% if sort_dir %}<input type="hidden" name="dir" value="{{ sort_dir }}">{% endif %}
+  <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+    <span id="datatable-count">{{ total_count }} data</span>
+    <span class="text-slate-300 dark:text-slate-600">|</span>
+    <label for="per-page-select" class="sr-only">Per halaman</label>
+    <select id="per-page-select"
+            name="per_page"
+            hx-get="{{ request_path }}"
+            hx-trigger="change"
+            hx-include="#datatable-controls"
+            hx-target="#datatable-content"
+            hx-swap="innerHTML"
+            class="rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800">
+      {% for opt in per_page_options %}
+        <option value="{{ opt }}" {% if opt == per_page %}selected{% endif %}>{{ opt }}/halaman</option>
+      {% endfor %}
+    </select>
   </div>
+</div>
 
-  {# ─── Table ─── #}
+{# Hidden form for hx-include — collects sort/search/per_page for all HTMX requests #}
+<div id="datatable-controls" class="hidden">
+  <input type="hidden" name="search" value="{{ search }}">
+  <input type="hidden" name="per_page" value="{{ per_page }}">
+  {% if sort_key %}<input type="hidden" name="sort" value="{{ sort_key }}">{% endif %}
+  {% if sort_dir %}<input type="hidden" name="dir" value="{{ sort_dir }}">{% endif %}
+</div>
+
+{# ─── Content area (HTMX swap target) ─── #}
+<div id="datatable-content">
   {% if page_obj.object_list %}
     <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <table class="min-w-full text-sm">
@@ -53,7 +55,7 @@
                 {% if col.sortable|default:True %}
                   <a href="#"
                      hx-get="{{ request_path }}?{% if sort_key == col.key and sort_dir == 'asc' %}sort={{ col.key }}&dir=desc{% else %}sort={{ col.key }}&dir=asc{% endif %}{% if search %}&search={{ search }}{% endif %}&per_page={{ per_page }}"
-                     hx-target="#datatable-wrapper"
+                     hx-target="#datatable-content"
                      hx-swap="innerHTML"
                      class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                     {{ col.label }}
