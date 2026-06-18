@@ -9,9 +9,8 @@
            name="search"
            value="{{ search }}"
            placeholder="Cari..."
-           hx-get="{{ request_path }}"
+           hx-get="{{ request_path }}?per_page={{ per_page }}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}"
            hx-trigger="keyup changed delay:300ms, search"
-           hx-include="#datatable-controls"
            hx-target="#datatable-content"
            hx-swap="innerHTML"
            class="w-full rounded-md border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
@@ -22,9 +21,8 @@
     <label for="per-page-select" class="sr-only">Per halaman</label>
     <select id="per-page-select"
             name="per_page"
-            hx-get="{{ request_path }}"
+            hx-get="{{ request_path }}?{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}"
             hx-trigger="change"
-            hx-include="#datatable-controls"
             hx-target="#datatable-content"
             hx-swap="innerHTML"
             class="rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800">
@@ -33,13 +31,6 @@
       {% endfor %}
     </select>
   </div>
-</div>
-
-<div id="datatable-controls" class="hidden">
-  <input type="hidden" name="search" value="{{ search }}">
-  <input type="hidden" name="per_page" value="{{ per_page }}">
-  {% if sort_key %}<input type="hidden" name="sort" value="{{ sort_key }}">{% endif %}
-  {% if sort_dir %}<input type="hidden" name="dir" value="{{ sort_dir }}">{% endif %}
 </div>
 
 {% if page_obj.object_list %}
