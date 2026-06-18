@@ -1,6 +1,6 @@
 {# Full datatable component. Receives: columns, page_obj, search, sort_key, sort_dir, per_page, per_page_options, request_path, total_count #}
 {% load humanize %}
-{% if request.headers.HX-Request %}
+{% if is_htmx %}
   {# HTMX partial: return only tbody + pagination for swap #}
   {% include "datatable/_tbody.html" %}
   {% include "datatable/_pagination.html" %}

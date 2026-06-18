@@ -68,5 +68,6 @@ class DatatableViewMixin:
             "per_page_options": [10, 20, 50, 100],
             "request_path": self.request.path,
             "total_count": paginator.count,
+            "is_htmx": self.request.headers.get("HX-Request") == "true",
         }
         return ctx
