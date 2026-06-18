@@ -1,0 +1,14 @@
+{# Partial: table rows. Receives: columns, page_obj (from datatable context) #}
+{% for obj in page_obj.object_list %}
+  <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+    {% for col in columns %}
+      <td class="px-4 py-3{% if col.key == 'actions' or forloop.last %} text-right{% endif %}{% if col.mono|default:False %} mono{% endif %}">
+        {% if col.template %}
+          {% include col.template with object=obj column=col request=request only %}
+        {% else %}
+          {{ obj|get_attr:col.key|default:"-" }}
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+{% endfor %}

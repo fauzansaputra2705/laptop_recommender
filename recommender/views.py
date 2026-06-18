@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import ListView, View
 
+from datatable.mixins import DatatableViewMixin
 from .forms import PreferenceForm
 from .models import Recommendation
 from .services import NoActiveModel, generate_recommendation
@@ -25,9 +26,16 @@ class RecommendView(LoginRequiredMixin, View):
         return render(request, "recommender/_results.html", {"rec": rec})
 
 
-class HistoryView(LoginRequiredMixin, ListView):
+class HistoryView(LoginRequiredMixin, DatatableViewMixin, ListView):
     template_name = "recommender/history.html"
     context_object_name = "recommendations"
+    datatable_columns = [
+        {"key": "created_at", "label": "Tanggal", "sortable": True, "searchable": False},
+        {"key": "preference__role_target", "label": "Peran", "sortable": False, "searchable": False},
+        {"key": "preference__budget_max_idr", "label": "Budget Maks", "sortable": False, "searchable": False, "template": "recommender/_budget_cell.html"},
+        {"key": "selected_cluster__interpretation", "label": "Cluster", "sortable": False, "searchable": False, "template": "recommender/_cluster_cell.html"},
+        {"key": "precision_at_k", "label": "Precision@K", "sortable": True, "searchable": False, "template": "recommender/_precision_cell.html"},
+    ]
 
     def get_queryset(self):
         return Recommendation.objects.filter(user=self.request.user).select_related(

@@ -1,0 +1,83 @@
+{# Partial: pagination controls. Receives: page_obj, per_page, request_path, search, sort_key, sort_dir #}
+{% if page_obj.paginator.num_pages > 1 %}
+  <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    {# Page info #}
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      Menampilkan {{ page_obj.start_index }}-{{ page_obj.end_index }} dari {{ page_obj.paginator.count }} data
+    </p>
+
+    {# Page buttons #}
+    <div class="flex items-center gap-1 text-sm">
+      {# First #}
+      {% if page_obj.number > 1 %}
+        <a href="#"
+           hx-get="{{ request_path }}?page=1{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
+           hx-target="#datatable-wrapper"
+           hx-swap="innerHTML"
+           class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+           title="Halaman pertama">
+          &laquo;
+        </a>
+      {% endif %}
+
+      {# Previous #}
+      {% if page_obj.has_previous %}
+        <a href="#"
+           hx-get="{{ request_path }}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
+           hx-target="#datatable-wrapper"
+           hx-swap="innerHTML"
+           class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+          &lsaquo;
+        </a>
+      {% endif %}
+
+      {# Page numbers #}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <span class="rounded bg-indigo-600 px-3 py-1 text-sm font-medium text-white">{{ num }}</span>
+        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+          <a href="#"
+             hx-get="{{ request_path }}?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
+             hx-target="#datatable-wrapper"
+             hx-swap="innerHTML"
+             class="rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+            {{ num }}
+          </a>
+        {% elif num == 1 or num == page_obj.paginator.num_pages %}
+          <a href="#"
+             hx-get="{{ request_path }}?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
+             hx-target="#datatable-wrapper"
+             hx-swap="innerHTML"
+             class="rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+            {{ num }}
+          </a>
+        {% elif num == 2 or num == page_obj.paginator.num_pages|add:"-1" %}
+          <span class="px-1 text-slate-400">&hellip;</span>
+        {% endif %}
+      {% endfor %}
+
+      {# Next #}
+      {% if page_obj.has_next %}
+        <a href="#"
+           hx-get="{{ request_path }}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
+           hx-target="#datatable-wrapper"
+           hx-swap="innerHTML"
+           class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+          &rsaquo;
+        </a>
+      {% endif %}
+
+      {# Last #}
+      {% if page_obj.number < page_obj.paginator.num_pages %}
+        <a href="#"
+           hx-get="{{ request_path }}?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if sort_key %}&sort={{ sort_key }}&dir={{ sort_dir }}{% endif %}&per_page={{ per_page }}"
+           hx-target="#datatable-wrapper"
+           hx-swap="innerHTML"
+           class="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+           title="Halaman terakhir">
+          &raquo;
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

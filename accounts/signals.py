@@ -11,5 +11,7 @@ def ensure_profile(sender, instance, created, **kwargs):
     if not created:
         return
     admin_emails = getattr(settings, "ADMIN_EMAILS", [])
-    role = "admin" if instance.email and instance.email in admin_emails else "user"
+    is_admin = (instance.is_staff or instance.is_superuser or
+                (instance.email and instance.email in admin_emails))
+    role = "admin" if is_admin else "user"
     Profile.objects.create(user=instance, role=role)
