@@ -44,8 +44,9 @@ INSTALLED_APPS = [
     "accounts",
     "catalog",
     "clustering",
-    "recommender",
     "core",
+    "datatable",
+    "recommender",
 ]
 
 MIDDLEWARE = [
