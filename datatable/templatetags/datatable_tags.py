@@ -1,18 +1,20 @@
 from django import template
-from django.template.defaultfilters import stringfilter
 
 register = template.Library()
 
 
 @register.filter
 def get_attr(obj, attr):
-    """Get an attribute from an object dynamically. Usage: {{ obj|get_attr:"field_name" }}"""
+    """Get an attribute from an object dynamically. Supports __ lookups.
+    Usage: {{ obj|get_attr:"field_name" }} or {{ obj|get_attr:"user__username" }}"""
     try:
-        value = getattr(obj, attr)
-        if callable(value):
-            return value()
+        value = obj
+        for part in attr.split("__"):
+            value = getattr(value, part)
+            if callable(value):
+                value = value()
         return value
-    except AttributeError:
+    except (AttributeError, TypeError):
         return ""
 
 
