@@ -1,5 +1,7 @@
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 
 class DatatableViewMixin:
@@ -20,6 +22,16 @@ class DatatableViewMixin:
         """Override to customize the base queryset for the datatable.
         Defaults to get_queryset()."""
         return self.get_queryset()
+
+    def get(self, request, *args, **kwargs):
+        if request.headers.get("HX-Request") == "true":
+            # HTMX request: return only datatable fragment, no base template
+            self.object_list = self.get_queryset()
+            ctx = self.get_context_data()
+            dt = ctx["datatable"]
+            html = render_to_string("datatable/_content.html", dt, request=request)
+            return HttpResponse(html)
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
