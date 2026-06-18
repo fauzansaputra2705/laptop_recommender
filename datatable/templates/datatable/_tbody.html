@@ -1,5 +1,4 @@
 {# Partial: table rows. Receives: columns, page_obj (from datatable context) #}
-{% load humanize %}
 {% for obj in page_obj.object_list %}
   <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
     {% for col in columns %}

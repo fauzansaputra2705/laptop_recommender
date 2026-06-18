@@ -16,9 +16,9 @@ class LaptopListView(AdminRequiredMixin, DatatableViewMixin, ListView):
         {"key": "brand", "label": "Merek", "sortable": True, "searchable": True},
         {"key": "model", "label": "Model", "sortable": True, "searchable": True},
         {"key": "processor_tier", "label": "Tier", "sortable": True, "searchable": False, "mono": True},
-        {"key": "ram_gb", "label": "RAM", "sortable": True, "searchable": False, "mono": True},
-        {"key": "storage_gb", "label": "Storage", "sortable": True, "searchable": False, "mono": True},
-        {"key": "price_idr", "label": "Harga", "sortable": True, "searchable": False, "mono": True},
+        {"key": "ram_gb", "label": "RAM", "sortable": True, "searchable": False, "mono": True, "template": "catalog/_ram_cell.html"},
+        {"key": "storage_gb", "label": "Storage", "sortable": True, "searchable": False, "mono": True, "template": "catalog/_storage_cell.html"},
+        {"key": "price_idr", "label": "Harga", "sortable": True, "searchable": False, "mono": True, "template": "catalog/_price_cell.html"},
         {"key": "cluster_label", "label": "Cluster", "sortable": False, "searchable": False},
         {"key": "actions", "label": "Aksi", "sortable": False, "searchable": False, "template": "catalog/_row_actions.html"},
     ]

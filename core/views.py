@@ -2,12 +2,11 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from accounts.mixins import AdminRequiredMixin
-from accounts.models import Profile
 from clustering.models import ClusterModel
 from datatable.mixins import DatatableViewMixin
 from recommender.models import Recommendation
@@ -131,7 +130,7 @@ class RecommendationListView(AdminRequiredMixin, DatatableViewMixin, ListView):
     datatable_columns = [
         {"key": "pk", "label": "ID", "sortable": True, "searchable": False},
         {"key": "user__username", "label": "User", "sortable": True, "searchable": True},
-        {"key": "preference__role_target", "label": "Role Target", "sortable": False, "searchable": True},
+        {"key": "preference__role_target", "label": "Role Target", "sortable": False, "searchable": True, "template": "core/_role_target_cell.html"},
         {"key": "precision_at_k", "label": "Precision@K", "sortable": True, "searchable": False, "mono": True},
         {"key": "created_at", "label": "Tanggal", "sortable": True, "searchable": False},
     ]
