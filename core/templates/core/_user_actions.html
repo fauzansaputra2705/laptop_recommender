@@ -1,0 +1,10 @@
+{% if object.pk != request.user.pk %}
+  <form method="post" action="{% url 'core:toggle_role' object.pk %}" class="inline">
+    {% csrf_token %}
+    <button type="submit" class="font-medium text-indigo-600 hover:underline cursor-pointer">
+      {% if object.profile.is_admin %}Jadikan User{% else %}Jadikan Admin{% endif %}
+    </button>
+  </form>
+{% else %}
+  <span class="text-xs text-slate-400">(Anda)</span>
+{% endif %}

@@ -1,0 +1,8 @@
+{% if not object.is_active %}
+  <form method="post" action="{% url 'core:activate_model' object.pk %}" class="inline">
+    {% csrf_token %}
+    <button type="submit" class="font-medium text-emerald-600 hover:underline cursor-pointer">Aktifkan</button>
+  </form>
+{% else %}
+  <span class="text-xs text-slate-400">Sudah aktif</span>
+{% endif %}
