@@ -1,25 +1,56 @@
 from django.db import models
 
 
-class Laptop(models.Model):
-    STORAGE_CHOICES = [("SSD", "SSD"), ("HDD", "HDD")]
+class Brand(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Processor(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    tier = models.PositiveSmallIntegerField(help_text="Ordinal performance tier 1-10")
+
+    class Meta:
+        ordering = ["-tier", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Gpu(models.Model):
     VGA_CHOICES = [("integrated", "Integrated"), ("dedicated", "Dedicated")]
 
-    brand = models.CharField(max_length=50)
+    name = models.CharField(max_length=80, unique=True)
+    vga_type = models.CharField(
+        max_length=10, choices=VGA_CHOICES, default="integrated"
+    )
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Laptop(models.Model):
+    STORAGE_CHOICES = [("SSD", "SSD"), ("HDD", "HDD")]
+
+    brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name="laptops")
     model = models.CharField(max_length=120)
-    processor = models.CharField(max_length=120)
-    processor_tier = models.PositiveSmallIntegerField(
-        help_text="Ordinal performance tier 1-10"
+    processor = models.ForeignKey(
+        Processor, on_delete=models.PROTECT, related_name="laptops"
     )
     ram_gb = models.PositiveIntegerField()
     storage_gb = models.PositiveIntegerField()
     storage_type = models.CharField(
         max_length=3, choices=STORAGE_CHOICES, default="SSD"
     )
-    vga = models.CharField(max_length=80)
-    vga_type = models.CharField(
-        max_length=10, choices=VGA_CHOICES, default="integrated"
-    )
+    vga = models.ForeignKey(Gpu, on_delete=models.PROTECT, related_name="laptops")
     screen_inch = models.DecimalField(max_digits=4, decimal_places=1)
     battery_hours = models.DecimalField(max_digits=4, decimal_places=1)
     price_idr = models.BigIntegerField()

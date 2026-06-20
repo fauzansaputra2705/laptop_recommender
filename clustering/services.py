@@ -3,22 +3,29 @@ from django.db import transaction
 from catalog.models import Laptop
 from clustering import engine
 from clustering.models import Cluster, ClusterModel
-from clustering.plots import elbow_png, silhouette_png
 
 MIN_LAPTOPS = 10
 
-# Fields pulled from each Laptop for the feature matrix (must match engine inputs).
-FIELDS = [
-    "brand",
-    "processor_tier",
+# Direct numeric / choice fields on the Laptop model.
+DIRECT_FIELDS = [
     "ram_gb",
     "storage_gb",
     "storage_type",
-    "vga_type",
     "screen_inch",
     "battery_hours",
     "price_idr",
 ]
+
+
+def _lap_to_record(lap):
+    """Flatten a Laptop instance into the dict format the engine expects."""
+    rec = {f: getattr(lap, f) for f in DIRECT_FIELDS}
+    rec["brand"] = str(lap.brand)
+    rec["processor_tier"] = lap.processor.tier
+    rec["vga_type"] = lap.vga.vga_type
+    rec["screen_inch"] = float(rec["screen_inch"])
+    rec["battery_hours"] = float(rec["battery_hours"])
+    return rec
 
 TIER_NAMES = ["Entry-Level", "Mid-Range", "High-End", "Premium", "Workstation", "Ultra"]
 
@@ -44,7 +51,7 @@ def run_training():
 
     Raises ValueError when there are too few laptops to cluster meaningfully.
     """
-    laptops = list(Laptop.objects.all())
+    laptops = list(Laptop.objects.select_related("brand", "processor", "vga").all())
     if len(laptops) < MIN_LAPTOPS:
         raise ValueError(
             f"Butuh minimal {MIN_LAPTOPS} laptop untuk training (ada {len(laptops)})."
@@ -52,14 +59,12 @@ def run_training():
 
     records = []
     for lap in laptops:
-        rec = {f: getattr(lap, f) for f in FIELDS}
-        # decimals -> float so numpy/json behave
-        rec["screen_inch"] = float(rec["screen_inch"])
-        rec["battery_hours"] = float(rec["battery_hours"])
+        rec = _lap_to_record(lap)
         rec["_id"] = lap.id
         records.append(rec)
 
-    feature_records = [{f: r[f] for f in FIELDS} for r in records]
+    feature_keys = DIRECT_FIELDS + ["brand", "processor_tier", "vga_type"]
+    feature_records = [{f: r[f] for f in feature_keys} for r in records]
     matrix, scaler_params, feature_order = engine.preprocess(feature_records)
     ev = engine.evaluate_k_range(matrix, 2, 10)
     trained = engine.train(matrix, ev["k_optimal"])
@@ -74,17 +79,6 @@ def run_training():
         feature_order=feature_order,
         is_active=True,
     )
-    model.elbow_plot.save(
-        f"elbow_{model.pk}.png",
-        elbow_png(ev["k_values"], ev["wcss"], ev["k_optimal"]),
-        save=False,
-    )
-    model.silhouette_plot.save(
-        f"sil_{model.pk}.png",
-        silhouette_png(ev["k_values"], ev["silhouette"], ev["k_optimal"]),
-        save=False,
-    )
-    model.save()
 
     # assign cluster labels back to laptops and build Cluster rows
     labels = trained["labels"]

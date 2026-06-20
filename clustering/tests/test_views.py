@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.auth.models import User
-from django.core.management import call_command
 from django.urls import reverse
 
 
@@ -20,18 +19,18 @@ def test_user_forbidden_from_clustering(client):
 
 
 @pytest.mark.django_db
-def test_train_insufficient_data_returns_error_partial(client):
+def test_train_insufficient_data_returns_error_partial(client, make_laptops):
     _admin(client)
-    call_command("generate_dummy_laptops", "--count", "5", "--seed", "9")
+    make_laptops(5, seed=9)
     resp = client.post(reverse("clustering:train"), HTTP_HX_REQUEST="true")
     assert resp.status_code == 200
     assert b"minimal" in resp.content.lower()
 
 
 @pytest.mark.django_db
-def test_train_success_returns_result_partial(client):
+def test_train_success_returns_result_partial(client, make_laptops):
     _admin(client)
-    call_command("generate_dummy_laptops", "--count", "60", "--seed", "9")
+    make_laptops(60, seed=9)
     resp = client.post(reverse("clustering:train"), HTTP_HX_REQUEST="true")
     assert resp.status_code == 200
     assert b"ilhouette" in resp.content

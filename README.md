@@ -23,7 +23,7 @@ Lima app Django dengan engine data-mining murni (tanpa dependensi Django) agar m
 | App | Tanggung jawab |
 |-----|----------------|
 | `accounts` | Profile + role (admin/user), role guard, Google OAuth |
-| `catalog` | Model Laptop, CRUD admin, generator dataset dummy |
+| `catalog` | Model Laptop, CRUD admin |
 | `clustering` | `engine.py` (preprocess, Elbow, Silhouette, train), ClusterModel/Cluster, training service + dashboard |
 | `recommender` | `engine.py` (pick cluster, cosine, precision@k), Preference/Recommendation, form + hasil + riwayat |
 | `core` | base template, landing, dashboard |
@@ -50,7 +50,6 @@ uv sync
 cp .env.example .env          # isi nilainya
 createdb laptop_recommender   # atau: createdb -O <role> laptop_recommender
 uv run python manage.py migrate
-uv run python manage.py generate_dummy_laptops --count 300
 uv run python manage.py createsuperuser
 uv run python manage.py runserver 8802
 ```
@@ -101,9 +100,25 @@ Role bisa juga diubah manual lewat Django admin (model Profile).
 uv run pytest
 ```
 
+## Fresh Migration
+
+```bash
+# hapus semua migration files (keep __init__.py)
+find . -path "*/migrations/0*.py" -delete
+find . -path "*/migrations/__pycache__" -exec rm -rf {} + 2>/dev/null
+
+# drop + buat ulang DB
+dropdb laptop_recommender
+createdb laptop_recommender
+
+# generate migration fresh
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+```
+
 ## Perintah Berguna
 
 ```bash
-# generate dataset dummy (reproducible)
-uv run python manage.py generate_dummy_laptops --count 300 --seed 1 --clear
+uv run pytest                          # jalankan test
+uv run python manage.py runserver 8802 # jalankan server
 ```

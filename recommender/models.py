@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+from catalog.models import Brand
 from clustering.models import Cluster, ClusterModel
 
 
@@ -31,7 +32,9 @@ class Preference(models.Model):
     min_battery_hours = models.DecimalField(
         max_digits=4, decimal_places=1, null=True, blank=True
     )
-    brand_preference = models.CharField(max_length=50, blank=True)
+    brand_preference = models.ForeignKey(
+        Brand, on_delete=models.SET_NULL, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

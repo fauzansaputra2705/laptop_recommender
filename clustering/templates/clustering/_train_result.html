@@ -16,15 +16,15 @@
   <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
     <figure class="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
       <div style="aspect-ratio: 5 / 3.5;">
-        {% if model.elbow_plot %}<img src="{{ model.elbow_plot.url }}" alt="Elbow plot, WCSS vs K, K optimal = {{ model.k_optimal }}" class="h-full w-full object-contain">{% endif %}
+        <canvas id="elbow-chart-{{ model.pk }}"></canvas>
       </div>
-      <figcaption class="mt-2 text-center text-xs text-slate-500">Elbow Method — K optimal = {{ model.k_optimal }}</figcaption>
+      <figcaption class="mt-2 text-center text-xs text-slate-500">Elbow Method &mdash; K optimal = {{ model.k_optimal }}</figcaption>
     </figure>
     <figure class="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
       <div style="aspect-ratio: 5 / 3.5;">
-        {% if model.silhouette_plot %}<img src="{{ model.silhouette_plot.url }}" alt="Silhouette Score vs K, tertinggi di K = {{ model.k_optimal }}" class="h-full w-full object-contain">{% endif %}
+        <canvas id="sil-chart-{{ model.pk }}"></canvas>
       </div>
-      <figcaption class="mt-2 text-center text-xs text-slate-500">Silhouette Score — tertinggi di K = {{ model.k_optimal }}</figcaption>
+      <figcaption class="mt-2 text-center text-xs text-slate-500">Silhouette Score &mdash; tertinggi di K = {{ model.k_optimal }}</figcaption>
     </figure>
   </div>
 
@@ -60,3 +60,94 @@
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  var wcss = {{ model.wcss_list }};
+  var sil  = {{ model.silhouette_list }};
+  var kOpt = {{ model.k_optimal }};
+  var ks   = Array.from({ length: wcss.length }, function(_, i) { return i + 2; });
+
+  var isDark    = document.documentElement.classList.contains('dark');
+  var gridColor = isDark ? '#334155' : '#e2e8f0';
+  var lblColor  = isDark ? '#94a3b8' : '#64748b';
+  var txtColor  = isDark ? '#e2e8f0' : '#1e293b';
+
+  function makeOpts(title, yLabel) {
+    return {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: title, color: txtColor, font: { size: 13 } },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Jumlah Cluster (K)', color: lblColor },
+          ticks: { color: lblColor },
+          grid:  { color: gridColor },
+        },
+        y: {
+          title: { display: true, text: yLabel, color: lblColor },
+          ticks: { color: lblColor },
+          grid:  { color: gridColor },
+        },
+      },
+    };
+  }
+
+  function addOptLine(opts) {
+    var kIdx = kOpt - 2;  // index in ks array
+    var ds = opts.data.datasets[0].data;
+    // Draw vertical line via a second dataset (scatter point + segment trick)
+    opts.data.datasets.push({
+      type: 'scatter',
+      data: [{ x: kOpt, y: Math.min.apply(null, ds) }, { x: kOpt, y: Math.max.apply(null, ds) }],
+      borderColor: '#ef4444',
+      backgroundColor: '#ef4444',
+      pointRadius: 0,
+      showLine: true,
+      borderDash: [5, 5],
+      borderWidth: 1.5,
+      label: 'K=' + kOpt,
+    });
+    opts.options.plugins.legend = { display: true, labels: { filter: function(i) { return i.datasetIndex === 1; }, color: '#ef4444', font: { size: 11 } } };
+    return opts;
+  }
+
+  var elbowConfig = addOptLine({
+    type: 'line',
+    data: {
+      labels: ks,
+      datasets: [{
+        data: wcss,
+        borderColor: '#4f46e5',
+        backgroundColor: '#4f46e520',
+        pointRadius: 4,
+        tension: 0.3,
+        fill: false,
+      }],
+    },
+    options: makeOpts('Elbow Method (WCSS vs K)', 'WCSS (Inertia)'),
+  });
+
+  var silConfig = addOptLine({
+    type: 'line',
+    data: {
+      labels: ks,
+      datasets: [{
+        data: sil,
+        borderColor: '#0891b2',
+        backgroundColor: '#0891b220',
+        pointRadius: 4,
+        tension: 0.3,
+        fill: false,
+      }],
+    },
+    options: makeOpts('Silhouette Score vs K', 'Silhouette Score'),
+  });
+
+  new Chart(document.getElementById('elbow-chart-{{ model.pk }}'), elbowConfig);
+  new Chart(document.getElementById('sil-chart-{{ model.pk }}'), silConfig);
+})();
+</script>

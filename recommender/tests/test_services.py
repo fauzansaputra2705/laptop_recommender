@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.auth.models import User
-from django.core.management import call_command
 
 from clustering.services import run_training
 from recommender.models import Preference, Recommendation
@@ -42,8 +41,8 @@ def test_routing_record_keeps_user_specs_above_target():
 
 
 @pytest.mark.django_db
-def test_generate_recommendation_end_to_end():
-    call_command("generate_dummy_laptops", "--count", "80", "--seed", "3")
+def test_generate_recommendation_end_to_end(make_laptops):
+    make_laptops(80, seed=3)
     run_training()
     user = User.objects.create_user("u", email="u@example.com", password="x")
     pref = Preference.objects.create(

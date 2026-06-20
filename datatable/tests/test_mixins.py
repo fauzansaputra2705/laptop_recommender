@@ -2,7 +2,7 @@ import pytest
 from django.test import RequestFactory
 from django.views.generic import ListView
 
-from catalog.models import Laptop
+from catalog.models import Brand, Gpu, Laptop, Processor
 from datatable.mixins import DatatableViewMixin
 
 
@@ -11,7 +11,7 @@ class LaptopDatatableView(DatatableViewMixin, ListView):
     template_name = "catalog/list.html"
     context_object_name = "laptops"
     datatable_columns = [
-        {"key": "brand", "label": "Merek", "sortable": True, "searchable": True},
+        {"key": "brand", "label": "Merek", "sortable": True, "searchable": True, "search_key": "brand__name", "sort_key": "brand__name"},
         {"key": "model", "label": "Model", "sortable": True, "searchable": True},
         {"key": "price_idr", "label": "Harga", "sortable": True, "searchable": False},
         {"key": "ram_gb", "label": "RAM", "sortable": True, "searchable": False},
@@ -21,26 +21,35 @@ class LaptopDatatableView(DatatableViewMixin, ListView):
 @pytest.fixture
 def laptops(db):
     """Create test laptops — 3 core + 9 extras for pagination testing."""
+    asus = Brand.objects.create(name="Asus")
+    lenovo = Brand.objects.create(name="Lenovo")
+    i3 = Processor.objects.create(name="i3", tier=3)
+    i5 = Processor.objects.create(name="i5", tier=5)
+    i9 = Processor.objects.create(name="i9", tier=9)
+    intel = Gpu.objects.create(name="Intel", vga_type="integrated")
+    rtx = Gpu.objects.create(name="RTX 4060", vga_type="dedicated")
+
     Laptop.objects.create(
-        brand="Asus", model="VivoBook 14", processor="i5", processor_tier=5,
-        ram_gb=8, storage_gb=256, storage_type="SSD", vga="Intel", vga_type="integrated",
+        brand=asus, model="VivoBook 14", processor=i5,
+        ram_gb=8, storage_gb=256, storage_type="SSD", vga=intel,
         screen_inch=14.0, battery_hours=8.0, price_idr=8000000,
     )
     Laptop.objects.create(
-        brand="Lenovo", model="IdeaPad Slim 3", processor="i3", processor_tier=3,
-        ram_gb=4, storage_gb=256, storage_type="SSD", vga="Intel", vga_type="integrated",
+        brand=lenovo, model="IdeaPad Slim 3", processor=i3,
+        ram_gb=4, storage_gb=256, storage_type="SSD", vga=intel,
         screen_inch=14.0, battery_hours=7.0, price_idr=6000000,
     )
     Laptop.objects.create(
-        brand="Asus", model="ROG Zephyrus", processor="i9", processor_tier=9,
-        ram_gb=32, storage_gb=1024, storage_type="SSD", vga="RTX 4060", vga_type="dedicated",
+        brand=asus, model="ROG Zephyrus", processor=i9,
+        ram_gb=32, storage_gb=1024, storage_type="SSD", vga=rtx,
         screen_inch=15.6, battery_hours=5.0, price_idr=25000000,
     )
     # Extra laptops so total=12, enabling pagination tests with per_page=10 (mixin min clamp)
+    other_brand = Brand.objects.create(name="Other")
     for i in range(9):
         Laptop.objects.create(
-            brand=f"Brand{i}", model=f"Model{i}", processor="i5", processor_tier=5,
-            ram_gb=8, storage_gb=256, storage_type="SSD", vga="Intel", vga_type="integrated",
+            brand=other_brand, model=f"Model{i}", processor=i5,
+            ram_gb=8, storage_gb=256, storage_type="SSD", vga=intel,
             screen_inch=14.0, battery_hours=8.0, price_idr=10000000 + i * 1000000,
         )
 

@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from catalog.models import Laptop
+from catalog.models import Brand, Gpu, Laptop, Processor
 
 
 def _admin(client):
@@ -28,14 +28,17 @@ def test_user_forbidden_from_catalog(client):
 @pytest.mark.django_db
 def test_admin_can_list_and_create(client):
     _admin(client)
+    brand = Brand.objects.create(name="ASUS")
+    proc = Processor.objects.create(name="i5", tier=5)
+    gpu = Gpu.objects.create(name="Iris", vga_type="integrated")
     assert client.get(reverse("catalog:list")).status_code == 200
     client.post(
         reverse("catalog:create"),
         {
-            "brand": "ASUS", "model": "X", "processor": "i5",
-            "processor_tier": 5, "ram_gb": 16, "storage_gb": 512,
-            "storage_type": "SSD", "vga": "Iris", "vga_type": "integrated",
+            "brand": brand.pk, "model": "X", "processor": proc.pk,
+            "ram_gb": 16, "storage_gb": 512,
+            "storage_type": "SSD", "vga": gpu.pk,
             "screen_inch": 14.0, "battery_hours": 8.0, "price_idr": 9500000,
         },
     )
-    assert Laptop.objects.filter(brand="ASUS", model="X").exists()
+    assert Laptop.objects.filter(brand=brand, model="X").exists()

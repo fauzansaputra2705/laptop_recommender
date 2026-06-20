@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.auth.models import User
-from django.core.management import call_command
 from django.urls import reverse
 
 from clustering.services import run_training
@@ -22,9 +21,9 @@ def test_recommend_get_renders_form(user_client):
 
 
 @pytest.mark.django_db
-def test_recommend_post_returns_results_partial(user_client):
+def test_recommend_post_returns_results_partial(user_client, make_laptops):
     client, _ = user_client
-    call_command("generate_dummy_laptops", "--count", "80", "--seed", "5")
+    make_laptops(80, seed=5)
     run_training()
     resp = client.post(
         reverse("recommender:recommend"),

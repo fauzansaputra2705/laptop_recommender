@@ -42,7 +42,7 @@ class DatatableViewMixin:
         # --- search ---
         search = params.get("search", "").strip()
         if search:
-            searchable = [c["key"] for c in columns if c.get("searchable", True)]
+            searchable = [c.get("search_key", c["key"]) for c in columns if c.get("searchable", True)]
             q = Q()
             for field in searchable:
                 q |= Q(**{f"{field}__icontains": search})
@@ -51,9 +51,14 @@ class DatatableViewMixin:
         # --- sort ---
         sort_key = params.get("sort", "")
         sort_dir = params.get("dir", "asc")
-        valid_keys = {c["key"] for c in columns if c.get("sortable", True)}
-        if sort_key and sort_key in valid_keys:
-            order = sort_key if sort_dir == "asc" else f"-{sort_key}"
+        sort_key_map = {
+            c["key"]: c.get("sort_key", c["key"])
+            for c in columns
+            if c.get("sortable", True)
+        }
+        if sort_key and sort_key in sort_key_map:
+            db_sort = sort_key_map[sort_key]
+            order = db_sort if sort_dir == "asc" else f"-{db_sort}"
             qs = qs.order_by(order)
 
         # --- paginate ---

@@ -11,8 +11,6 @@ class ClusterModel(models.Model):
     silhouette_list = models.JSONField()
     scaler_params = models.JSONField()
     feature_order = models.JSONField()
-    elbow_plot = models.ImageField(upload_to="plots/", null=True, blank=True)
-    silhouette_plot = models.ImageField(upload_to="plots/", null=True, blank=True)
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

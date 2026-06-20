@@ -1,7 +1,7 @@
 from catalog.models import Laptop
 from clustering import engine as cengine
 from clustering.models import ClusterModel
-from clustering.services import FIELDS
+from clustering.services import _lap_to_record
 from recommender import engine as rengine
 from recommender.models import Recommendation
 from recommender.profiles import target_for
@@ -26,7 +26,7 @@ def _routing_record(pref):
     user_vga = pref.vga_type or ""
     vga = "dedicated" if "dedicated" in (user_vga, target["vga_type"]) else "integrated"
     return {
-        "brand": pref.brand_preference or "ASUS",
+        "brand": str(pref.brand_preference) if pref.brand_preference else "ASUS",
         "processor_tier": max(pref.min_processor_tier, target["processor_tier"]),
         "ram_gb": max(pref.min_ram_gb, target["ram_gb"]),
         "storage_gb": max(pref.min_storage_gb, target["storage_gb"]),
@@ -49,7 +49,7 @@ def _pref_dict(pref):
         "min_battery_hours": float(pref.min_battery_hours) if pref.min_battery_hours else None,
         "storage_type": pref.storage_type or None,
         "vga_type": pref.vga_type or None,
-        "brand_preference": pref.brand_preference or None,
+        "brand_preference": str(pref.brand_preference) if pref.brand_preference else None,
     }
 
 
@@ -71,18 +71,22 @@ def generate_recommendation(pref, top_n=5):
     cluster_label = rengine.pick_cluster(pref_vector, model.centroids)
     selected_cluster = model.clusters.get(label=cluster_label)
 
-    laptops = list(Laptop.objects.filter(cluster_label=cluster_label))
+    laptops = list(Laptop.objects.filter(cluster_label=cluster_label).select_related(
+        "brand", "processor", "vga"
+    ))
     lap_records = []
     for lap in laptops:
-        rec = {f: getattr(lap, f) for f in FIELDS}
-        rec["screen_inch"] = float(rec["screen_inch"])
-        rec["battery_hours"] = float(rec["battery_hours"])
+        rec = _lap_to_record(lap)
         rec["id"] = lap.id
         rec["name"] = str(lap)
         lap_records.append(rec)
 
+    feature_keys = [
+        "processor_tier", "ram_gb", "storage_gb", "storage_type",
+        "vga_type", "screen_inch", "battery_hours", "price_idr",
+    ]
     lap_matrix, _, _ = cengine.preprocess(
-        [{f: r[f] for f in FIELDS} for r in lap_records],
+        [{f: r[f] for f in feature_keys} for r in lap_records],
         scaler_params=model.scaler_params,
         feature_order=model.feature_order,
     ) if lap_records else ([], None, None)
