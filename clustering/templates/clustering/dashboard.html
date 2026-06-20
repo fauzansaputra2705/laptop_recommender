@@ -18,6 +18,13 @@
   </button>
 </div>
 
+{% if dist_chart_b64 %}
+<div class="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+  <h2 class="mb-3 text-base font-semibold text-slate-700 dark:text-slate-300">Distribusi Laptop per Cluster</h2>
+  <img src="data:image/png;base64,{{ dist_chart_b64 }}" alt="Distribusi Laptop per Cluster" class="mx-auto max-w-full rounded">
+</div>
+{% endif %}
+
 <div id="train-output">
   {% if model %}
     {% include "clustering/_train_result.html" %}

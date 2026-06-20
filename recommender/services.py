@@ -95,8 +95,29 @@ def generate_recommendation(pref, top_n=5):
 
     top = rengine.cosine_topn(pref_vector, lap_records, n=top_n)
     pref_d = _pref_dict(pref)
+    pref_raw = {
+        "budget_min_idr": pref.budget_min_idr,
+        "budget_max_idr": pref.budget_max_idr,
+        "min_ram_gb": pref.min_ram_gb,
+        "min_processor_tier": pref.min_processor_tier,
+        "min_storage_gb": pref.min_storage_gb,
+        "min_screen_inch": float(pref.min_screen_inch) if pref.min_screen_inch else None,
+        "min_battery_hours": float(pref.min_battery_hours) if pref.min_battery_hours else None,
+        "storage_type": pref.storage_type or None,
+        "vga_type": pref.vga_type or None,
+    }
     results = []
     for t in top:
+        laptop_raw = {
+            "price_idr": t["price_idr"],
+            "ram_gb": t["ram_gb"],
+            "processor_tier": t["processor_tier"],
+            "storage_gb": t["storage_gb"],
+            "screen_inch": t["screen_inch"],
+            "battery_hours": t["battery_hours"],
+            "storage_type": t["storage_type"],
+            "vga_type": t["vga_type"],
+        }
         results.append({
             "id": t["id"],
             "name": t["name"],
@@ -111,6 +132,7 @@ def generate_recommendation(pref, top_n=5):
             "price_idr": t["price_idr"],
             "similarity": round(t["similarity"], 4),
             "relevant": rengine.is_relevant(t, pref_d),
+            "breakdown": rengine.explain_result(pref_raw, laptop_raw, model.feature_order),
         })
     precision = rengine.precision_at_k(results, k=top_n)
 

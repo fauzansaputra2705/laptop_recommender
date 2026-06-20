@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
-from django.views.generic import ListView, View
+from django.views.generic import DetailView, ListView, View
+
+from catalog.models import Laptop
 
 from datatable.mixins import DatatableViewMixin
 from .exports import build_recommendation_excel, build_recommendation_pdf, recommendations_to_rows
@@ -19,10 +21,11 @@ class RecommendView(LoginRequiredMixin, View):
         if not form.is_valid():
             return render(request, "recommender/_form.html", {"form": form})
         pref = form.save(commit=False)
+        top_n = int(form.cleaned_data.get("top_n", 5))
         pref.user = request.user
         pref.save()
         try:
-            rec = generate_recommendation(pref, top_n=5)
+            rec = generate_recommendation(pref, top_n=top_n)
         except NoActiveModel as exc:
             return render(request, "recommender/_no_model.html", {"message": str(exc)})
         return render(request, "recommender/_results.html", {"rec": rec})
@@ -43,6 +46,51 @@ class HistoryView(LoginRequiredMixin, DatatableViewMixin, ListView):
         return Recommendation.objects.filter(user=self.request.user).select_related(
             "preference", "selected_cluster"
         )
+
+
+class RecommendationDetailView(LoginRequiredMixin, DetailView):
+    model = Recommendation
+    template_name = "recommender/result.html"
+    context_object_name = "rec"
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related(
+            "preference", "selected_cluster", "cluster_model", "user"
+        )
+        if self.request.user.profile.is_admin:
+            return qs
+        return qs.filter(user=self.request.user)
+
+
+class CompareView(LoginRequiredMixin, View):
+    def get(self, request):
+        raw = request.GET.get("ids", "")
+        if not raw:
+            return HttpResponseBadRequest("No IDs provided.")
+
+        try:
+            ids = [int(i) for i in raw.split(",") if i.strip()][:3]
+        except ValueError:
+            return HttpResponseBadRequest("Invalid IDs.")
+
+        if not ids:
+            return HttpResponseBadRequest("No IDs provided.")
+
+        # Collect all laptop IDs from this user's recommendations
+        user_laptop_ids = set()
+        for rec in Recommendation.objects.filter(user=request.user):
+            for item in rec.results:
+                user_laptop_ids.add(item["id"])
+
+        # Security: only allow IDs the user owns
+        if not all(i in user_laptop_ids for i in ids):
+            return HttpResponseBadRequest("One or more laptops not found in your recommendations.")
+
+        laptops = list(Laptop.objects.filter(id__in=ids).select_related("brand", "processor", "vga"))
+        # Preserve requested order
+        laptops.sort(key=lambda l: ids.index(l.id))
+
+        return render(request, "recommender/_compare.html", {"laptops": laptops})
 
 
 class ExportHistoryExcelView(LoginRequiredMixin, View):

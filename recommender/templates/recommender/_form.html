@@ -65,6 +65,11 @@
     </div>
   </fieldset>
 
+  <div>
+    <label for="{{ form.top_n.id_for_label }}" class="mb-1 block text-sm font-medium">Jumlah Rekomendasi</label>
+    {{ form.top_n }}
+  </div>
+
   <button type="submit"
           class="flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
     <span class="htmx-indicator inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>

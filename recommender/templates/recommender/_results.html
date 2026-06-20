@@ -23,31 +23,88 @@
     {% if rec.results|length < rec.k_value %}
       <p class="text-xs text-slate-500">Hanya {{ rec.results|length }} laptop tersedia di cluster ini.</p>
     {% endif %}
-    <div class="space-y-3">
+
+    <div class="space-y-3" id="laptop-cards">
       {% for r in rec.results %}
-        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+        <div class="rounded-lg border p-4 shadow-sm transition hover:shadow-md
+          {% if r.relevant %}border-emerald-400 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-950/30{% else %}border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800{% endif %}">
           <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-lg font-semibold">{{ r.name }}</h3>
-              <p class="text-sm text-slate-500">{{ r.brand }}</p>
+            <div class="flex items-start gap-3">
+              <input
+                type="checkbox"
+                class="compare-checkbox mt-1 h-4 w-4 rounded border-slate-300 accent-indigo-600"
+                value="{{ r.id }}"
+                aria-label="Bandingkan {{ r.name }}"
+              >
+              <div>
+                <h3 class="text-lg font-semibold">{{ r.name }}</h3>
+                <p class="text-sm text-slate-500">{{ r.brand }}</p>
+              </div>
             </div>
             <div class="text-right">
               <p class="mono text-base font-semibold">Rp{{ r.price_idr|intcomma }}</p>
-              <p class="mono text-xs text-slate-500">sim {{ r.similarity }}</p>
             </div>
           </div>
-          <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
-            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">Tier {{ r.processor_tier }}</span>
-            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">RAM {{ r.ram_gb }}GB</span>
-            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.storage_gb }}GB {{ r.storage_type }}</span>
-            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.screen_inch }}"</span>
-            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.vga_type }}</span>
-            <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.battery_hours }} jam</span>
+
+          <div class="mt-3">
+            <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+              <span>Similarity Score</span>
+              <span class="mono font-medium">{{ r.similarity }}</span>
+            </div>
+            <div class="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700">
+              <div class="h-2 rounded-full bg-indigo-500" style="width: {% widthratio r.similarity 1 100 %}%"></div>
+            </div>
           </div>
+
+          {% if r.breakdown %}
+            <div class="mt-3 flex flex-wrap gap-2">
+              {% for feat, info in r.breakdown.items %}
+                {% if info.status == "exceeded" or info.status == "met" %}
+                  <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                    title="Aktual: {{ info.actual }} | Minimum: {{ info.minimum }}">
+                    &#10003;
+                    {% if feat == "ram_gb" %}RAM {{ info.actual|floatformat:"0" }}GB
+                    {% elif feat == "storage_gb" %}{{ info.actual|floatformat:"0" }}GB {{ r.storage_type }}
+                    {% elif feat == "processor_tier" %}Tier {{ info.actual|floatformat:"0" }}
+                    {% elif feat == "screen_inch" %}Layar {{ info.actual }}"
+                    {% elif feat == "battery_hours" %}Baterai {{ info.actual }} jam
+                    {% elif feat == "price_idr" %}Harga OK
+                    {% elif feat == "storage_type" %}{{ info.actual }}
+                    {% elif feat == "vga_type" %}{{ info.actual }}
+                    {% else %}{{ feat }}: {{ info.actual }}{% endif %}
+                  </span>
+                {% elif info.status == "below" %}
+                  <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                    title="Aktual: {{ info.actual }} | Minimum: {{ info.minimum }}">
+                    &#9888;
+                    {% if feat == "ram_gb" %}RAM {{ info.actual|floatformat:"0" }}GB (min: {{ info.minimum|floatformat:"0" }}GB)
+                    {% elif feat == "storage_gb" %}{{ info.actual|floatformat:"0" }}GB (min: {{ info.minimum|floatformat:"0" }}GB)
+                    {% elif feat == "processor_tier" %}Tier {{ info.actual|floatformat:"0" }} (min: {{ info.minimum|floatformat:"0" }})
+                    {% elif feat == "screen_inch" %}Layar {{ info.actual }}" (min: {{ info.minimum }}")
+                    {% elif feat == "battery_hours" %}Baterai {{ info.actual }} jam (min: {{ info.minimum }} jam)
+                    {% elif feat == "price_idr" %}Harga melebihi budget
+                    {% elif feat == "storage_type" %}{{ info.actual }} (diinginkan: {{ info.minimum }})
+                    {% elif feat == "vga_type" %}{{ info.actual }} (diinginkan: {{ info.minimum }})
+                    {% else %}{{ feat }}: {{ info.actual }}{% endif %}
+                  </span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">Tier {{ r.processor_tier }}</span>
+              <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">RAM {{ r.ram_gb }}GB</span>
+              <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.storage_gb }}GB {{ r.storage_type }}</span>
+              <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.screen_inch }}"</span>
+              <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.vga_type }}</span>
+              <span class="rounded bg-slate-100 px-2 py-1 dark:bg-slate-700">{{ r.battery_hours }} jam</span>
+            </div>
+          {% endif %}
+
           <div class="mt-3">
             {% if r.relevant %}
               <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
-                &#10003; Memenuhi semua syarat
+                &#10003; Sangat Cocok
               </span>
             {% else %}
               <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
@@ -58,6 +115,49 @@
         </div>
       {% endfor %}
     </div>
+
+    <div class="flex justify-end">
+      <button
+        id="compare-btn"
+        class="hidden rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        hx-get="{% url 'recommender:compare' %}"
+        hx-target="#compare-section"
+        hx-swap="innerHTML"
+        hx-include="[data-compare-ids]"
+        aria-label="Bandingkan laptop terpilih">
+        Bandingkan (<span id="compare-count">0</span>)
+      </button>
+    </div>
+
+    <div id="compare-section"></div>
+
+    <script>
+      (function () {
+        var selected = [];
+        var btn = document.getElementById('compare-btn');
+        var countEl = document.getElementById('compare-count');
+
+        document.getElementById('laptop-cards').addEventListener('change', function (e) {
+          if (!e.target.classList.contains('compare-checkbox')) return;
+          var id = e.target.value;
+          if (e.target.checked) {
+            if (selected.length >= 3) { e.target.checked = false; return; }
+            selected.push(id);
+          } else {
+            selected = selected.filter(function (x) { return x !== id; });
+          }
+          // disable unchecked boxes when 3 selected
+          document.querySelectorAll('.compare-checkbox').forEach(function (cb) {
+            cb.disabled = selected.length >= 3 && !cb.checked;
+          });
+          countEl.textContent = selected.length;
+          btn.classList.toggle('hidden', selected.length < 2);
+          btn.setAttribute('hx-get', '/recommend/compare/?ids=' + selected.join(','));
+          htmx.process(btn);
+        });
+      })();
+    </script>
+
   {% else %}
     <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
       Belum ada laptop di cluster terpilih. Tambahkan data laptop lalu latih ulang cluster.

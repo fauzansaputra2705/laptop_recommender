@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Tentang Sistem Rekomendasi Laptop{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-4xl">
+
+  <div class="mb-8 text-center">
+    <h1 class="text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Sistem Rekomendasi Laptop</h1>
+    <p class="mt-2 text-slate-500">PT Informatika Media Pratama</p>
+    <p class="mt-1 text-sm text-slate-400">Implementasi K-Means Clustering + Content Based Filtering (Cosine Similarity)</p>
+  </div>
+
+  <!-- Alur Sistem -->
+  <div class="mb-8 overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <h2 class="mb-5 text-lg font-semibold text-slate-800 dark:text-white">Alur Sistem</h2>
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      {% for step in "" %}
+      {% endfor %}
+      <div class="flex flex-col items-center rounded-lg bg-indigo-50 px-4 py-3 text-center dark:bg-indigo-950/30">
+        <span class="mb-1 text-lg font-bold text-indigo-700 dark:text-indigo-400">1</span>
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Input Preferensi</span>
+        <span class="mt-1 text-xs text-slate-500">Peran, budget, spesifikasi minimum</span>
+      </div>
+      <span class="text-2xl text-slate-300">&rarr;</span>
+      <div class="flex flex-col items-center rounded-lg bg-sky-50 px-4 py-3 text-center dark:bg-sky-950/30">
+        <span class="mb-1 text-lg font-bold text-sky-700 dark:text-sky-400">2</span>
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">K-Means Routing</span>
+        <span class="mt-1 text-xs text-slate-500">Vektor preferensi &rarr; cluster terdekat</span>
+      </div>
+      <span class="text-2xl text-slate-300">&rarr;</span>
+      <div class="flex flex-col items-center rounded-lg bg-emerald-50 px-4 py-3 text-center dark:bg-emerald-950/30">
+        <span class="mb-1 text-lg font-bold text-emerald-700 dark:text-emerald-400">3</span>
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Cosine Similarity</span>
+        <span class="mt-1 text-xs text-slate-500">CBF dalam cluster terpilih</span>
+      </div>
+      <span class="text-2xl text-slate-300">&rarr;</span>
+      <div class="flex flex-col items-center rounded-lg bg-amber-50 px-4 py-3 text-center dark:bg-amber-950/30">
+        <span class="mb-1 text-lg font-bold text-amber-700 dark:text-amber-400">4</span>
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Top-N Rekomendasi</span>
+        <span class="mt-1 text-xs text-slate-500">Diurutkan berdasarkan similarity</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <!-- K-Means -->
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <h2 class="mb-3 text-base font-semibold text-sky-700 dark:text-sky-400">K-Means Clustering</h2>
+      <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Preprocessing:</span> IQR clipping + MinMax scaling pada fitur numerik, One-Hot Encoding pada fitur kategorikal</li>
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Elbow Method:</span> mencari K optimal dengan WCSS (Within-Cluster Sum of Squares)</li>
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Silhouette Score:</span> validasi kohesi cluster (0&ndash;1, semakin tinggi semakin baik)</li>
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">K dicari pada rentang</span> 2&ndash;10, dipilih K dengan silhouette tertinggi</li>
+      </ul>
+    </div>
+
+    <!-- CBF -->
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <h2 class="mb-3 text-base font-semibold text-emerald-700 dark:text-emerald-400">Content Based Filtering</h2>
+      <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Preference Vector:</span> preferensi user diubah menjadi vektor dalam ruang fitur yang sama dengan data training</li>
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Cosine Similarity:</span> mengukur sudut antara vektor preferensi dan setiap laptop dalam cluster</li>
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Precision@K:</span> proporsi laptop yang memenuhi semua syarat minimum dalam Top-K hasil</li>
+        <li><span class="font-medium text-slate-700 dark:text-slate-300">Scaler reuse:</span> vektor preferensi selalu menggunakan parameter scaler dari model aktif</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Rumus Cosine Similarity -->
+  <div class="my-6 rounded-xl border border-slate-200 bg-slate-50 p-5 text-center dark:border-slate-700 dark:bg-slate-900">
+    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Formula Cosine Similarity</p>
+    <p class="font-mono text-base text-slate-700 dark:text-slate-300">
+      sim(A, B) = (A &middot; B) / (|A| &times; |B|)
+    </p>
+    <p class="mt-1 text-xs text-slate-400">A = vektor preferensi user &ensp;&bull;&ensp; B = vektor laptop</p>
+  </div>
+
+  <!-- Peran Pengguna -->
+  <div class="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <h2 class="border-b border-slate-200 px-6 py-4 text-base font-semibold dark:border-slate-700">Peran Pengguna</h2>
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-left dark:bg-slate-900">
+        <tr>
+          <th class="px-6 py-3 font-semibold">Aksi</th>
+          <th class="px-6 py-3 text-center font-semibold">Admin</th>
+          <th class="px-6 py-3 text-center font-semibold">User</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for row in "" %}
+        {% endfor %}
+        <tr><td class="px-6 py-2">Kelola data laptop (tambah, edit, hapus)</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-slate-300">&mdash;</td></tr>
+        <tr><td class="px-6 py-2">Import laptop via CSV</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-slate-300">&mdash;</td></tr>
+        <tr><td class="px-6 py-2">Training K-Means Clustering</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-slate-300">&mdash;</td></tr>
+        <tr><td class="px-6 py-2">Melihat evaluasi model clustering</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-slate-300">&mdash;</td></tr>
+        <tr><td class="px-6 py-2">Input preferensi &amp; terima rekomendasi</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td></tr>
+        <tr><td class="px-6 py-2">Lihat riwayat rekomendasi</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td></tr>
+        <tr><td class="px-6 py-2">Export laporan (Excel/PDF)</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td><td class="px-6 py-2 text-center text-emerald-600">&#10003;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <h2 class="mb-4 text-base font-semibold">Teknologi</h2>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {% for item in "" %}{% endfor %}
+      <div class="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900">
+        <p class="font-medium text-slate-800 dark:text-slate-200">Python 3.12</p>
+        <p class="text-xs text-slate-500">Bahasa pemrograman</p>
+      </div>
+      <div class="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900">
+        <p class="font-medium text-slate-800 dark:text-slate-200">Django 5.2</p>
+        <p class="text-xs text-slate-500">Web framework</p>
+      </div>
+      <div class="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900">
+        <p class="font-medium text-slate-800 dark:text-slate-200">scikit-learn</p>
+        <p class="text-xs text-slate-500">K-Means &amp; Silhouette</p>
+      </div>
+      <div class="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900">
+        <p class="font-medium text-slate-800 dark:text-slate-200">PostgreSQL</p>
+        <p class="text-xs text-slate-500">Database</p>
+      </div>
+      <div class="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900">
+        <p class="font-medium text-slate-800 dark:text-slate-200">HTMX</p>
+        <p class="text-xs text-slate-500">Interaktivitas tanpa JS penuh</p>
+      </div>
+      <div class="rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-900">
+        <p class="font-medium text-slate-800 dark:text-slate-200">matplotlib</p>
+        <p class="text-xs text-slate-500">Visualisasi Elbow &amp; Silhouette</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

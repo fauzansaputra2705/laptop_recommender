@@ -17,6 +17,10 @@ class LandingView(TemplateView):
     template_name = "core/landing.html"
 
 
+class AboutView(TemplateView):
+    template_name = "core/about.html"
+
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "core/dashboard.html"
 
@@ -26,9 +30,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ctx["is_admin"] = is_admin
 
         if is_admin:
+            import datetime
+
             from catalog.models import Laptop
             from clustering.models import Cluster
-            from django.db.models import Avg
+            from django.db.models import Avg, Count
+            from django.db.models.functions import TruncDate
+            from django.utils import timezone
+
+            from core.plots import cluster_usage_png, precision_trend_png, role_distribution_png
 
             ctx["total_laptops"] = Laptop.objects.count()
             ctx["total_clusters"] = Cluster.objects.filter(cluster_model__is_active=True).count()
@@ -43,6 +53,44 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             ctx["recent_recommendations"] = Recommendation.objects.select_related(
                 "user", "preference", "selected_cluster"
             ).order_by("-created_at")[:5]
+
+            if Recommendation.objects.exists():
+                role_qs = (
+                    Recommendation.objects.values("preference__role_target")
+                    .annotate(count=Count("id"))
+                    .order_by()
+                )
+                ctx["chart_role"] = role_distribution_png(
+                    [r["preference__role_target"] or "(unknown)" for r in role_qs],
+                    [r["count"] for r in role_qs],
+                )
+
+                since = timezone.now().date() - datetime.timedelta(days=30)
+                trend_qs = (
+                    Recommendation.objects.filter(created_at__date__gte=since)
+                    .annotate(day=TruncDate("created_at"))
+                    .values("day")
+                    .annotate(avg_p=Avg("precision_at_k"))
+                    .order_by("day")
+                )
+                ctx["chart_precision"] = precision_trend_png(
+                    [r["day"] for r in trend_qs],
+                    [float(r["avg_p"]) for r in trend_qs],
+                ) if trend_qs.exists() else None
+
+                cluster_qs = (
+                    Recommendation.objects.values("selected_cluster__interpretation")
+                    .annotate(count=Count("id"))
+                    .order_by()
+                )
+                ctx["chart_cluster"] = cluster_usage_png(
+                    [r["selected_cluster__interpretation"] or "(unknown)" for r in cluster_qs],
+                    [r["count"] for r in cluster_qs],
+                )
+            else:
+                ctx["chart_role"] = None
+                ctx["chart_precision"] = None
+                ctx["chart_cluster"] = None
         else:
             user_recs = self.request.user.recommendations.select_related(
                 "preference", "selected_cluster"

@@ -1,0 +1,125 @@
+{% load humanize %}
+<div class="mt-6 rounded-lg border border-indigo-200 bg-white shadow-sm dark:border-indigo-800 dark:bg-slate-800" id="compare-table">
+  <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Perbandingan Laptop</h3>
+    <button
+      class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+      hx-get=""
+      hx-target="#compare-section"
+      hx-swap="innerHTML"
+      onclick="document.getElementById('compare-section').innerHTML=''; return false;">
+      &times; Tutup
+    </button>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+          <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Spesifikasi</th>
+          {% for lap in laptops %}
+            <th class="px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-200">
+              {{ lap.brand }} {{ lap.model|truncatechars:30 }}
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+
+        {% comment %}Processor{% endcomment %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">Processor</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs">{{ lap.processor.name }}</td>
+          {% endfor %}
+        </tr>
+
+        {% comment %}Processor Tier — highest = best{% endcomment %}
+        {% with best_tier=laptops|dictsort:"processor.tier"|last %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">Tier Processor</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs font-medium
+              {% if lap.processor.tier == best_tier.processor.tier %}text-emerald-700 dark:text-emerald-400{% endif %}">
+              {{ lap.processor.tier }}
+            </td>
+          {% endfor %}
+        </tr>
+        {% endwith %}
+
+        {% comment %}RAM — highest = best{% endcomment %}
+        {% with best_ram=laptops|dictsort:"ram_gb"|last %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">RAM</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs font-medium
+              {% if lap.ram_gb == best_ram.ram_gb %}text-emerald-700 dark:text-emerald-400{% endif %}">
+              {{ lap.ram_gb }} GB
+            </td>
+          {% endfor %}
+        </tr>
+        {% endwith %}
+
+        {% comment %}Storage — highest = best{% endcomment %}
+        {% with best_storage=laptops|dictsort:"storage_gb"|last %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">Storage</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs font-medium
+              {% if lap.storage_gb == best_storage.storage_gb %}text-emerald-700 dark:text-emerald-400{% endif %}">
+              {{ lap.storage_gb }} GB {{ lap.storage_type }}
+            </td>
+          {% endfor %}
+        </tr>
+        {% endwith %}
+
+        {% comment %}GPU{% endcomment %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">GPU</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs">{{ lap.vga.name }}</td>
+          {% endfor %}
+        </tr>
+
+        {% comment %}Layar — highest = best{% endcomment %}
+        {% with best_screen=laptops|dictsort:"screen_inch"|last %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">Layar</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs font-medium
+              {% if lap.screen_inch == best_screen.screen_inch %}text-emerald-700 dark:text-emerald-400{% endif %}">
+              {{ lap.screen_inch }}"
+            </td>
+          {% endfor %}
+        </tr>
+        {% endwith %}
+
+        {% comment %}Baterai — highest = best{% endcomment %}
+        {% with best_bat=laptops|dictsort:"battery_hours"|last %}
+        <tr>
+          <td class="px-4 py-2 text-xs text-slate-500">Baterai</td>
+          {% for lap in laptops %}
+            <td class="px-4 py-2 text-xs font-medium
+              {% if lap.battery_hours == best_bat.battery_hours %}text-emerald-700 dark:text-emerald-400{% endif %}">
+              {{ lap.battery_hours }} jam
+            </td>
+          {% endfor %}
+        </tr>
+        {% endwith %}
+
+        {% comment %}Harga — lowest = best{% endcomment %}
+        {% with best_price=laptops|dictsort:"price_idr"|first %}
+        <tr class="bg-slate-50 dark:bg-slate-900">
+          <td class="px-4 py-2 text-xs font-semibold text-slate-500">Harga</td>
+          {% for lap in laptops %}
+            <td class="mono px-4 py-2 text-xs font-semibold
+              {% if lap.price_idr == best_price.price_idr %}text-emerald-700 dark:text-emerald-400{% endif %}">
+              Rp{{ lap.price_idr|intcomma }}
+            </td>
+          {% endfor %}
+        </tr>
+        {% endwith %}
+
+      </tbody>
+    </table>
+  </div>
+</div>

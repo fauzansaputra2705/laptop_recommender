@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 
 from accounts.mixins import AdminRequiredMixin
 from clustering.models import ClusterModel
-from clustering.plots import comparison_bar_png
+from clustering.plots import cluster_distribution_png, comparison_bar_png
 from clustering.services import run_training
 
 
@@ -15,7 +15,14 @@ class DashboardView(AdminRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         model = ClusterModel.objects.filter(is_active=True).first()
         ctx["model"] = model
-        ctx["clusters"] = model.clusters.all() if model else []
+        clusters = list(model.clusters.all()) if model else []
+        ctx["clusters"] = clusters
+        if model and clusters:
+            ctx["dist_chart_b64"] = cluster_distribution_png(
+                [c.label for c in clusters],
+                [c.member_count for c in clusters],
+                [c.interpretation for c in clusters],
+            )
         return ctx
 
 

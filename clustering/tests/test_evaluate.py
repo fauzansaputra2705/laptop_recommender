@@ -34,3 +34,10 @@ def test_evaluate_view_user_forbidden(client):
     client.force_login(u)
     resp = client.get(reverse("clustering:evaluate"))
     assert resp.status_code == 403
+
+
+def test_cluster_distribution_png_returns_nonempty_string():
+    from clustering.plots import cluster_distribution_png
+    result = cluster_distribution_png([0, 1, 2], [30, 50, 20], ["Entry-Level", "Mid-Range", "High-End"])
+    assert isinstance(result, str)
+    assert len(result) > 100

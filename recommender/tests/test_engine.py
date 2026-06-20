@@ -1,4 +1,4 @@
-from recommender.engine import cosine_topn, is_relevant, pick_cluster, precision_at_k
+from recommender.engine import cosine_topn, explain_result, is_relevant, pick_cluster, precision_at_k
 
 
 def test_pick_cluster_returns_nearest_centroid():
@@ -61,3 +61,68 @@ def test_is_relevant_fails_over_budget():
               "storage_type": "SSD", "vga_type": "dedicated", "brand": "ASUS"}
     pref = {"budget_max_idr": 25_000_000, "min_ram_gb": 8, "min_processor_tier": 5}
     assert is_relevant(laptop, pref) is False
+
+
+# --- explain_result tests ---
+
+FEATURE_ORDER = ["ram_gb", "storage_gb", "processor_tier", "screen_inch", "battery_hours", "price_idr", "storage_type", "vga_type"]
+
+
+def test_explain_result_met():
+    pref_raw = {
+        "min_ram_gb": 16, "min_storage_gb": 512, "min_processor_tier": 5,
+        "min_screen_inch": 14.0, "min_battery_hours": 6.0,
+        "budget_min_idr": 8_000_000, "budget_max_idr": 25_000_000,
+        "storage_type": "SSD", "vga_type": "dedicated",
+    }
+    laptop_raw = {
+        "ram_gb": 16, "storage_gb": 512, "processor_tier": 5,
+        "screen_inch": 14.0, "battery_hours": 6.0,
+        "price_idr": 15_000_000, "storage_type": "SSD", "vga_type": "dedicated",
+    }
+    result = explain_result(pref_raw, laptop_raw, FEATURE_ORDER)
+    assert result["ram_gb"]["status"] == "met"
+    assert result["processor_tier"]["status"] == "met"
+    assert result["price_idr"]["status"] == "met"
+    assert result["storage_type"]["status"] == "met"
+
+
+def test_explain_result_exceeded():
+    pref_raw = {"min_ram_gb": 8, "min_storage_gb": 256, "min_processor_tier": 3,
+                "budget_max_idr": 25_000_000}
+    laptop_raw = {"ram_gb": 16, "storage_gb": 512, "processor_tier": 7,
+                  "price_idr": 15_000_000}
+    result = explain_result(pref_raw, laptop_raw, ["ram_gb", "storage_gb", "processor_tier", "price_idr"])
+    assert result["ram_gb"]["status"] == "exceeded"
+    assert result["storage_gb"]["status"] == "exceeded"
+    assert result["processor_tier"]["status"] == "exceeded"
+
+
+def test_explain_result_below():
+    pref_raw = {"min_ram_gb": 16}
+    laptop_raw = {"ram_gb": 8}
+    result = explain_result(pref_raw, laptop_raw, ["ram_gb"])
+    assert result["ram_gb"]["status"] == "below"
+    assert result["ram_gb"]["actual"] == 8.0
+    assert result["ram_gb"]["minimum"] == 16.0
+
+
+def test_explain_result_harga_exceeded_budget():
+    pref_raw = {"budget_min_idr": 5_000_000, "budget_max_idr": 15_000_000}
+    laptop_raw = {"price_idr": 20_000_000}
+    result = explain_result(pref_raw, laptop_raw, ["price_idr"])
+    assert result["price_idr"]["status"] == "below"
+
+
+def test_explain_result_harga_dalam_budget():
+    pref_raw = {"budget_min_idr": 5_000_000, "budget_max_idr": 25_000_000}
+    laptop_raw = {"price_idr": 15_000_000}
+    result = explain_result(pref_raw, laptop_raw, ["price_idr"])
+    assert result["price_idr"]["status"] == "met"
+
+
+def test_explain_result_skip_missing_feature():
+    pref_raw = {"min_ram_gb": 16}
+    laptop_raw = {}
+    result = explain_result(pref_raw, laptop_raw, ["ram_gb", "price_idr"])
+    assert "price_idr" not in result

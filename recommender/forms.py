@@ -36,6 +36,14 @@ class PreferenceForm(forms.ModelForm):
             "brand_preference": forms.Select(attrs={"class": INPUT}),
         }
 
+    TOP_N_CHOICES = [(3, "3 rekomendasi"), (5, "5 rekomendasi"), (10, "10 rekomendasi")]
+    top_n = forms.ChoiceField(
+        choices=TOP_N_CHOICES,
+        initial=5,
+        label="Jumlah Rekomendasi",
+        widget=forms.Select(attrs={"class": INPUT}),
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["brand_preference"].empty_label = "Semua merek"
