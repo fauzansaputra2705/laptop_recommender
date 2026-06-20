@@ -25,4 +25,7 @@ urlpatterns = [
     path("gpus/create/", views.GpuCreateView.as_view(), name="gpu_create"),
     path("gpus/<int:pk>/edit/", views.GpuUpdateView.as_view(), name="gpu_update"),
     path("gpus/<int:pk>/delete/", views.GpuDeleteView.as_view(), name="gpu_delete"),
+    # CSV import
+    path("import/", views.ImportView.as_view(), name="import"),
+    path("import/confirm/", views.ImportConfirmView.as_view(), name="import_confirm"),
 ]

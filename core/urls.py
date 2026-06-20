@@ -13,4 +13,6 @@ urlpatterns = [
     path("dashboard/models/", views.ClusterModelListView.as_view(), name="manage_models"),
     path("dashboard/models/<int:pk>/activate/", views.ActivateModelView.as_view(), name="activate_model"),
     path("dashboard/recommendations/", views.RecommendationListView.as_view(), name="manage_recommendations"),
+    path("dashboard/recommendations/export/excel/", views.ExportAllRecommendationsExcelView.as_view(), name="export_recommendations_excel"),
+    path("dashboard/recommendations/export/pdf/", views.ExportAllRecommendationsPdfView.as_view(), name="export_recommendations_pdf"),
 ]

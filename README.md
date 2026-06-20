@@ -13,7 +13,8 @@ K-Means Clustering pada Sistem Rekomendasi Laptop Berbasis Web di PT Informatika
 - Python 3.12+ · Django 5.2 · `uv`
 - PostgreSQL (psycopg + dj-database-url)
 - HTMX + Tailwind (CDN, no build step)
-- scikit-learn / pandas / numpy · matplotlib (plot Elbow & Silhouette)
+- scikit-learn / pandas / numpy
+- Chart.js (CDN) — grafik Elbow & Silhouette interaktif di browser
 - django-allauth (Google OAuth) · pytest + pytest-django
 
 ## Arsitektur
@@ -82,7 +83,7 @@ Role bisa juga diubah manual lewat Django admin (model Profile).
 
 1. **Admin** menambah/kelola data laptop (menu Katalog), lalu buka **Clustering** dan klik
    *Train / Re-cluster*. Sistem menghitung K optimal (Elbow + Silhouette), menyimpan model aktif,
-   menampilkan plot dan tabel interpretasi cluster.
+   menampilkan grafik interaktif (Chart.js) dan tabel interpretasi cluster.
 2. **User** membuka **Rekomendasi**, mengisi preferensi (peran, budget, spesifikasi minimum),
    lalu menerima Top-5 laptop beserta cluster terpilih dan **Precision@K**.
 3. **Riwayat** menyimpan setiap rekomendasi.
@@ -103,16 +104,6 @@ uv run pytest
 ## Fresh Migration
 
 ```bash
-# hapus semua migration files (keep __init__.py)
-find . -path "*/migrations/0*.py" -delete
-find . -path "*/migrations/__pycache__" -exec rm -rf {} + 2>/dev/null
-
-# drop + buat ulang DB
-dropdb laptop_recommender
-createdb laptop_recommender
-
-# generate migration fresh
-uv run python manage.py makemigrations
 uv run python manage.py migrate
 ```
 

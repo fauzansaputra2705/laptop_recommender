@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Evaluasi Model Clustering{% endblock %}
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Evaluasi Model Clustering</h1>
+    <p class="mt-1 text-sm text-slate-500">Perbandingan seluruh model yang pernah ditraining</p>
+  </div>
+  <a href="{% url 'clustering:dashboard' %}" class="text-sm text-indigo-600 hover:underline dark:text-indigo-400">&larr; Dashboard Clustering</a>
+</div>
+
+{% if chart_b64 %}
+<div class="mb-8 overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+  <h2 class="mb-3 text-base font-semibold text-slate-700 dark:text-slate-300">Grafik Silhouette Score per Model</h2>
+  <img src="data:image/png;base64,{{ chart_b64 }}" alt="Silhouette Score Comparison" class="mx-auto max-w-full rounded">
+  <p class="mt-2 text-center text-xs text-slate-400">Bar biru = model aktif saat ini</p>
+</div>
+{% endif %}
+
+{% if models %}
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+  <table class="min-w-full text-sm">
+    <thead class="border-b border-slate-200 bg-slate-50 text-left dark:border-slate-700 dark:bg-slate-900">
+      <tr>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">ID</th>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">K Optimal</th>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Silhouette Score</th>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Jumlah Cluster</th>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Total Laptop</th>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Dibuat</th>
+        <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Status</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+      {% for m in models %}
+      <tr class="{% if m.is_active %}bg-indigo-50 dark:bg-indigo-950/30{% else %}hover:bg-slate-50 dark:hover:bg-slate-700/50{% endif %}">
+        <td class="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">#{{ m.pk }}</td>
+        <td class="px-4 py-3 font-mono font-semibold text-slate-800 dark:text-slate-200">{{ m.k_optimal }}</td>
+        <td class="px-4 py-3 font-mono">
+          {% if m.silhouette_score >= 0.5 %}
+            <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ m.silhouette_score|floatformat:4 }}</span>
+          {% elif m.silhouette_score >= 0.25 %}
+            <span class="font-medium text-amber-600 dark:text-amber-400">{{ m.silhouette_score|floatformat:4 }}</span>
+          {% else %}
+            <span class="font-medium text-red-600 dark:text-red-400">{{ m.silhouette_score|floatformat:4 }}</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-center text-slate-700 dark:text-slate-300">{{ m.clusters.count }}</td>
+        <td class="px-4 py-3 text-center tabular-nums text-slate-700 dark:text-slate-300">{{ m.total_laptops }}</td>
+        <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ m.created_at|date:"d M Y H:i" }}</td>
+        <td class="px-4 py-3">
+          {% if m.is_active %}
+            <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">Aktif</span>
+          {% else %}
+            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-400">Nonaktif</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="rounded-xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700">
+  Belum ada model yang ditraining. Lakukan training di
+  <a href="{% url 'clustering:dashboard' %}" class="text-indigo-600 hover:underline">Dashboard Clustering</a>.
+</div>
+{% endif %}
+{% endblock %}

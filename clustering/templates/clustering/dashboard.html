@@ -2,7 +2,12 @@
 {% block title %}Clustering &amp; Training{% endblock %}
 {% block content %}
 <div class="mb-6 flex items-center justify-between">
-  <h1 class="text-2xl font-bold sm:text-3xl">Clustering &amp; Training</h1>
+  <div class="flex items-center gap-3">
+    <h1 class="text-2xl font-bold sm:text-3xl">Clustering &amp; Training</h1>
+    <a href="{% url 'clustering:evaluate' %}" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800">
+      Evaluasi Model
+    </a>
+  </div>
   <button type="button"
           hx-post="{% url 'clustering:train' %}"
           hx-target="#train-output"

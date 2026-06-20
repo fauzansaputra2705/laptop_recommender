@@ -2,7 +2,13 @@
 {% load datatable_tags %}
 {% block title %}Riwayat Rekomendasi{% endblock %}
 {% block content %}
-<h1 class="mb-6 text-2xl font-bold sm:text-3xl">Riwayat Rekomendasi</h1>
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-bold sm:text-3xl">Riwayat Rekomendasi</h1>
+  <div class="flex items-center gap-2">
+    <a href="{% url 'recommender:export_excel' %}" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">Export Excel</a>
+    <a href="{% url 'recommender:export_pdf' %}" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">Export PDF</a>
+  </div>
+</div>
 
 {% datatable %}
 {% endblock %}

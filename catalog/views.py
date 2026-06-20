@@ -1,9 +1,15 @@
+from decimal import Decimal
+
+from django.contrib import messages
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from accounts.mixins import AdminRequiredMixin
 from datatable.mixins import DatatableViewMixin
 
+from .csv_import import parse_and_validate
 from .forms import BrandForm, GpuForm, LaptopForm, ProcessorForm
 from .models import Brand, Gpu, Laptop, Processor
 
@@ -143,3 +149,62 @@ class GpuDeleteView(AdminRequiredMixin, DeleteView):
     model = Gpu
     template_name = "catalog/gpu_confirm_delete.html"
     success_url = reverse_lazy("catalog:gpu_list")
+
+
+class ImportView(AdminRequiredMixin, View):
+    template_name = "catalog/import.html"
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        csv_file = request.FILES.get("csv_file")
+        if not csv_file:
+            messages.error(request, "Pilih file CSV terlebih dahulu.")
+            return render(request, self.template_name)
+        if not csv_file.name.lower().endswith(".csv"):
+            messages.error(request, "File harus berformat .csv")
+            return render(request, self.template_name)
+
+        result = parse_and_validate(csv_file)
+        serializable = [
+            {k: str(v) if isinstance(v, Decimal) else v for k, v in row.items()}
+            for row in result["valid_rows"]
+        ]
+        request.session["csv_import_rows"] = serializable
+        return render(request, "catalog/_import_preview.html", {"result": result})
+
+
+class ImportConfirmView(AdminRequiredMixin, View):
+    def post(self, request):
+        rows = request.session.pop("csv_import_rows", [])
+        if not rows:
+            messages.warning(request, "Tidak ada data untuk diimport. Upload ulang file CSV.")
+            return redirect("catalog:import")
+
+        created_laptops = []
+        for row in rows:
+            brand, _ = Brand.objects.get_or_create(name=row["brand"])
+            processor, _ = Processor.objects.get_or_create(
+                name=row["processor"],
+                defaults={"tier": int(row["processor_tier"])},
+            )
+            vga, _ = Gpu.objects.get_or_create(
+                name=row["vga"],
+                defaults={"vga_type": row["vga_type"]},
+            )
+            created_laptops.append(Laptop(
+                brand=brand,
+                model=row["model"],
+                processor=processor,
+                ram_gb=int(row["ram_gb"]),
+                storage_gb=int(row["storage_gb"]),
+                storage_type=row["storage_type"],
+                vga=vga,
+                screen_inch=Decimal(str(row["screen_inch"])),
+                battery_hours=Decimal(str(row["battery_hours"])),
+                price_idr=int(row["price_idr"]),
+            ))
+        Laptop.objects.bulk_create(created_laptops)
+        messages.success(request, f"{len(created_laptops)} laptop berhasil diimport.")
+        return redirect("catalog:list")

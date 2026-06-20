@@ -1,8 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import ListView, View
 
 from datatable.mixins import DatatableViewMixin
+from .exports import build_recommendation_excel, build_recommendation_pdf, recommendations_to_rows
 from .forms import PreferenceForm
 from .models import Recommendation
 from .services import NoActiveModel, generate_recommendation
@@ -40,4 +42,28 @@ class HistoryView(LoginRequiredMixin, DatatableViewMixin, ListView):
     def get_queryset(self):
         return Recommendation.objects.filter(user=self.request.user).select_related(
             "preference", "selected_cluster"
+        )
+
+
+class ExportHistoryExcelView(LoginRequiredMixin, View):
+    def get(self, request):
+        qs = Recommendation.objects.filter(user=request.user)
+        rows = recommendations_to_rows(qs, include_user=False)
+        content = build_recommendation_excel(rows, include_user_col=False)
+        return HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": 'attachment; filename="riwayat_rekomendasi.xlsx"'},
+        )
+
+
+class ExportHistoryPdfView(LoginRequiredMixin, View):
+    def get(self, request):
+        qs = Recommendation.objects.filter(user=request.user)
+        rows = recommendations_to_rows(qs, include_user=False)
+        content = build_recommendation_pdf(rows, include_user_col=False)
+        return HttpResponse(
+            content,
+            content_type="application/pdf",
+            headers={"Content-Disposition": 'attachment; filename="riwayat_rekomendasi.pdf"'},
         )
