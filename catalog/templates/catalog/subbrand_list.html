@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Master Sub Brand{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Master Sub Brand</h1>
+    <a href="{% url 'catalog:subbrand_create' %}" class="btn btn-primary">
+      <i class="fa-solid fa-plus"></i> Tambah Sub Brand
+    </a>
+  </div>
+
+  <div class="card bg-base-100 shadow-md">
+    <div class="card-body">
+      <table class="table table-zebra">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Brand</th>
+            <th class="w-1">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subbrand in object_list %}
+          <tr>
+            <td>{{ subbrand.name }}</td>
+            <td>{{ subbrand.brand.name }}</td>
+            <td>{% include "catalog/_subbrand_actions.html" with subbrand=subbrand %}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center text-base-content/50">
+              Belum ada data sub brand
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

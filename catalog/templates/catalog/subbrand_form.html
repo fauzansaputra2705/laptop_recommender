@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Edit{% else %}Tambah{% endif %} Sub Brand{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">{% if object %}Edit{% else %}Tambah{% endif %} Sub Brand</h1>
+  </div>
+
+  <div class="card bg-base-100 shadow-md max-w-2xl">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium mb-2">
+            Nama Sub Brand
+          </label>
+          {{ form.name }}
+          {% if form.name.errors %}
+            <div class="text-error text-sm mt-1">{{ form.name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-4">
+          <label for="{{ form.brand.id_for_label }}" class="block text-sm font-medium mb-2">
+            Brand
+          </label>
+          {{ form.brand }}
+          {% if form.brand.errors %}
+            <div class="text-error text-sm mt-1">{{ form.brand.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="flex gap-2 mt-6">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-save"></i> Simpan
+          </button>
+          <a href="{% url 'catalog:subbrand_list' %}" class="btn btn-ghost">
+            Batal
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

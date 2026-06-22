@@ -1,0 +1,8 @@
+<div class="flex gap-2">
+  <a href="{% url 'catalog:subbrand_update' item.pk %}" class="btn btn-ghost btn-sm">
+    <i class="fa-solid fa-pen"></i> Edit
+  </a>
+  <a href="{% url 'catalog:subbrand_delete' item.pk %}" class="btn btn-ghost btn-sm text-error">
+    <i class="fa-solid fa-trash"></i> Hapus
+  </a>
+</div>
