@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Brand, Gpu, Laptop, Processor
+from .models import Brand, Gpu, Laptop, Processor, SubBrand
 
 INPUT = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800"
 
@@ -10,6 +10,16 @@ class BrandForm(forms.ModelForm):
         model = Brand
         fields = ["name"]
         widgets = {"name": forms.TextInput(attrs={"class": INPUT})}
+
+
+class SubBrandForm(forms.ModelForm):
+    class Meta:
+        model = SubBrand
+        fields = ["name", "brand"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": INPUT}),
+            "brand": forms.Select(attrs={"class": INPUT}),
+        }
 
 
 class ProcessorForm(forms.ModelForm):
@@ -36,12 +46,13 @@ class LaptopForm(forms.ModelForm):
     class Meta:
         model = Laptop
         fields = [
-            "brand", "model", "processor", "ram_gb",
+            "brand", "sub_brand", "model", "processor", "ram_gb",
             "storage_gb", "storage_type", "vga", "screen_inch",
             "battery_hours", "price_idr",
         ]
         widgets = {
             "brand": forms.Select(attrs={"class": INPUT}),
+            "sub_brand": forms.Select(attrs={"class": INPUT}),
             "model": forms.TextInput(attrs={"class": INPUT}),
             "processor": forms.Select(attrs={"class": INPUT}),
             "ram_gb": forms.NumberInput(attrs={"class": INPUT}),
