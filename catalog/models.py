@@ -55,6 +55,13 @@ class Laptop(models.Model):
     STORAGE_CHOICES = [("SSD", "SSD"), ("HDD", "HDD")]
 
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name="laptops")
+    sub_brand = models.ForeignKey(
+        SubBrand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="laptops",
+    )
     model = models.CharField(max_length=120)
     processor = models.ForeignKey(
         Processor, on_delete=models.PROTECT, related_name="laptops"
