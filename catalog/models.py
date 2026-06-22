@@ -11,6 +11,20 @@ class Brand(models.Model):
         return self.name
 
 
+class SubBrand(models.Model):
+    name = models.CharField(max_length=50)
+    brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name="sub_brands")
+
+    class Meta:
+        ordering = ["brand", "name"]
+        unique_together = [("brand", "name")]
+        verbose_name = "Sub Brand"
+        verbose_name_plural = "Sub Brands"
+
+    def __str__(self):
+        return f"{self.brand.name} - {self.name}"
+
+
 class Processor(models.Model):
     name = models.CharField(max_length=120, unique=True)
     tier = models.PositiveSmallIntegerField(help_text="Ordinal performance tier 1-10")
