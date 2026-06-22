@@ -25,6 +25,11 @@ urlpatterns = [
     path("gpus/create/", views.GpuCreateView.as_view(), name="gpu_create"),
     path("gpus/<int:pk>/edit/", views.GpuUpdateView.as_view(), name="gpu_update"),
     path("gpus/<int:pk>/delete/", views.GpuDeleteView.as_view(), name="gpu_delete"),
+    # SubBrand master
+    path("sub-brands/", views.SubBrandListView.as_view(), name="subbrand_list"),
+    path("sub-brands/create/", views.SubBrandCreateView.as_view(), name="subbrand_create"),
+    path("sub-brands/<int:pk>/edit/", views.SubBrandUpdateView.as_view(), name="subbrand_update"),
+    path("sub-brands/<int:pk>/delete/", views.SubBrandDeleteView.as_view(), name="subbrand_delete"),
     # CSV import
     path("import/", views.ImportView.as_view(), name="import"),
     path("import/confirm/", views.ImportConfirmView.as_view(), name="import_confirm"),

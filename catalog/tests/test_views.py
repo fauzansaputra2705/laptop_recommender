@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from catalog.models import Brand, Gpu, Laptop, Processor
+from catalog.models import Brand, Gpu, Laptop, Processor, SubBrand
 
 
 def _admin(client):
@@ -42,3 +42,38 @@ def test_admin_can_list_and_create(client):
         },
     )
     assert Laptop.objects.filter(brand=brand, model="X").exists()
+
+
+@pytest.mark.django_db
+def test_subbrand_crud_views(client):
+    _admin(client)
+    brand = Brand.objects.create(name="Lenovo")
+
+    # Create
+    resp = client.post(
+        reverse("catalog:subbrand_create"),
+        {"name": "ThinkPad", "brand": brand.pk},
+    )
+    assert resp.status_code == 302
+    assert SubBrand.objects.filter(name="ThinkPad", brand=brand).exists()
+
+    sub = SubBrand.objects.get(name="ThinkPad", brand=brand)
+
+    # List
+    resp = client.get(reverse("catalog:subbrand_list"))
+    assert resp.status_code == 200
+    assert b"ThinkPad" in resp.content
+
+    # Update
+    resp = client.post(
+        reverse("catalog:subbrand_update", args=[sub.pk]),
+        {"name": "ThinkPad X", "brand": brand.pk},
+    )
+    assert resp.status_code == 302
+    sub.refresh_from_db()
+    assert sub.name == "ThinkPad X"
+
+    # Delete
+    resp = client.post(reverse("catalog:subbrand_delete", args=[sub.pk]))
+    assert resp.status_code == 302
+    assert not SubBrand.objects.filter(pk=sub.pk).exists()
