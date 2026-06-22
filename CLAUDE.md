@@ -25,8 +25,8 @@ Skripsi project. Indonesian UI, English code.
 | `accounts` | Profile model (admin/user role), signals, Google OAuth |
 | `catalog` | Laptop, Brand, Processor, Gpu models; admin CRUD; CSV bulk import |
 | `clustering` | `engine.py` (preprocess, Elbow, Silhouette, train), `plots.py` (Elbow/Silhouette/distribution/comparison charts), ClusterModel/Cluster, training service + dashboard + evaluate |
-| `recommender` | `engine.py` (pick cluster, cosine sim, precision@k), `exports.py` (Excel/PDF), Preference/Recommendation, form (configurable top-N) + results + history + permalink |
-| `core` | Landing, about, dashboard, base template context |
+| `recommender` | `engine.py` (pick cluster, cosine sim, precision@k, `explain_result`), `exports.py` (Excel/PDF), Preference/Recommendation, form (configurable top-N) + results (breakdown badges, similarity bar, comparison) + history + permalink |
+| `core` | Landing, about, dashboard (admin analytics charts), base template context; `plots.py` (role/precision/cluster charts) |
 | `datatable` | Reusable HTMX datatable mixin (sort, search, pagination) |
 
 ## Key Invariants
@@ -34,7 +34,10 @@ Skripsi project. Indonesian UI, English code.
 - **Scaler reuse**: Recommendation always reuses `ClusterModel.scaler_params` + `feature_order` from training — preference vector must be in same feature space as laptop data.
 - **Cluster routing**: User minimum specs used for (1) relevance/Precision@K — laptop relevant if meets all minimums + in budget, (2) routing cluster + cosine — minimums floored to role target profile (`recommender/profiles.py`), price uses budget midpoint.
 - **Single active model**: Only one `ClusterModel.is_active=True` at a time (enforced in `save()`).
-- **Engine independence**: `clustering/engine.py`, `recommender/engine.py`, `recommender/exports.py`, `catalog/csv_import.py` have zero Django imports — pure data science/IO, testable in isolation.
+- **Engine independence**: `clustering/engine.py`, `recommender/engine.py`, `recommender/exports.py`, `catalog/csv_import.py`, `core/plots.py` have zero Django imports — pure data science/IO, testable in isolation.
+- **Explainability**: `explain_result(pref_raw, laptop_raw, feature_order)` returns per-feature `{status, actual, minimum}` dict — `met`/`exceeded`/`below`. Injected as `breakdown` key in each result entry by `generate_recommendation()`. Template renders color-coded badges.
+- **Comparison**: `CompareView` GET `/recommend/compare/?ids=1,2,3` — validates IDs against user's own recommendations before fetching. Max 3 laptops. HTMX partial `_compare.html`.
+- **Analytics charts**: `core/plots.py` generates base64 PNG — `role_distribution_png`, `precision_trend_png`, `cluster_usage_png`. Injected as `chart_role`, `chart_precision`, `chart_cluster` in admin `DashboardView`. `None` if no data.
 - **Export purity**: `recommender/exports.py` builds Excel/PDF from plain `list[dict]` — no ORM. `recommendations_to_rows(qs)` is the ORM-to-dict bridge.
 - **CSV import flow**: `catalog/csv_import.py` validates rows; session stores `csv_import_rows`; `ImportConfirmView` resolves FK via `get_or_create` then `bulk_create`.
 
@@ -52,7 +55,7 @@ uv run python manage.py runserver 8802
 ## Commands
 
 ```bash
-uv run pytest                          # 73+ tests
+uv run pytest                          # 86+ tests
 uv run python manage.py generate_dummy_laptops --count 300  # seed data
 ```
 
@@ -69,6 +72,7 @@ uv run python manage.py generate_dummy_laptops --count 300  # seed data
 | `/clustering/evaluate/` | EvaluateView | admin |
 | `/recommend/` | RecommendView | login |
 | `/recommend/result/<id>/` | RecommendationDetailView | login (own) |
+| `/recommend/compare/` | CompareView | login |
 | `/recommend/history/` | HistoryView | login |
 | `/recommend/export/excel/` | ExportHistoryExcelView | login |
 | `/recommend/export/pdf/` | ExportHistoryPdfView | login |
