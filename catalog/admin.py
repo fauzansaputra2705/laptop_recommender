@@ -1,12 +1,19 @@
 from django.contrib import admin
 
-from .models import Brand, Gpu, Laptop, Processor
+from .models import Brand, Gpu, Laptop, Processor, SubBrand
 
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
+
+
+@admin.register(SubBrand)
+class SubBrandAdmin(admin.ModelAdmin):
+    list_display = ("name", "brand")
+    list_filter = ("brand",)
+    search_fields = ("name", "brand__name")
 
 
 @admin.register(Processor)
@@ -27,11 +34,12 @@ class GpuAdmin(admin.ModelAdmin):
 class LaptopAdmin(admin.ModelAdmin):
     list_display = (
         "brand",
+        "sub_brand",
         "model",
         "processor",
         "ram_gb",
         "price_idr",
         "cluster_label",
     )
-    list_filter = ("brand", "storage_type", "vga__vga_type")
-    search_fields = ("brand__name", "model", "processor__name")
+    list_filter = ("brand", "sub_brand", "storage_type", "vga__vga_type")
+    search_fields = ("brand__name", "sub_brand__name", "model", "processor__name")
