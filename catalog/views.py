@@ -10,8 +10,8 @@ from accounts.mixins import AdminRequiredMixin
 from datatable.mixins import DatatableViewMixin
 
 from .csv_import import parse_and_validate
-from .forms import BrandForm, GpuForm, LaptopForm, ProcessorForm
-from .models import Brand, Gpu, Laptop, Processor
+from .forms import BrandForm, GpuForm, LaptopForm, ProcessorForm, SubBrandForm
+from .models import Brand, Gpu, Laptop, Processor, SubBrand
 
 
 class LaptopListView(AdminRequiredMixin, DatatableViewMixin, ListView):
@@ -149,6 +149,40 @@ class GpuDeleteView(AdminRequiredMixin, DeleteView):
     model = Gpu
     template_name = "catalog/gpu_confirm_delete.html"
     success_url = reverse_lazy("catalog:gpu_list")
+
+
+# ─── SubBrand CRUD ───────────────────────────────────────────────────────────
+
+
+class SubBrandListView(AdminRequiredMixin, DatatableViewMixin, ListView):
+    model = SubBrand
+    template_name = "catalog/subbrand_list.html"
+    context_object_name = "sub_brands"
+    datatable_columns = [
+        {"key": "name", "label": "Nama", "sortable": True, "searchable": True},
+        {"key": "brand", "label": "Brand", "sortable": True, "searchable": True, "search_key": "brand__name", "sort_key": "brand__name"},
+        {"key": "actions", "label": "Aksi", "sortable": False, "searchable": False, "template": "catalog/_subbrand_actions.html"},
+    ]
+
+
+class SubBrandCreateView(AdminRequiredMixin, CreateView):
+    model = SubBrand
+    form_class = SubBrandForm
+    template_name = "catalog/subbrand_form.html"
+    success_url = reverse_lazy("catalog:subbrand_list")
+
+
+class SubBrandUpdateView(AdminRequiredMixin, UpdateView):
+    model = SubBrand
+    form_class = SubBrandForm
+    template_name = "catalog/subbrand_form.html"
+    success_url = reverse_lazy("catalog:subbrand_list")
+
+
+class SubBrandDeleteView(AdminRequiredMixin, DeleteView):
+    model = SubBrand
+    template_name = "catalog/subbrand_confirm_delete.html"
+    success_url = reverse_lazy("catalog:subbrand_list")
 
 
 class ImportView(AdminRequiredMixin, View):
