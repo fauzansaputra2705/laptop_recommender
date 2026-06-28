@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% block title %}Diagram UML{% endblock %}
+{% block content %}
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Diagram UML</h1>
+  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+    Dokumentasi sistem rekomendasi laptop — use case, activity, class, dan sequence diagram.
+  </p>
+</div>
+
+{# ─── Tabs ─── #}
+<div class="mb-6 border-b border-slate-200 dark:border-slate-700">
+  <nav class="-mb-px flex gap-6 overflow-x-auto" id="uml-tabs">
+    <button data-tab="uc-admin" class="whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium border-indigo-500 text-indigo-600 dark:text-indigo-400">Use Case — Admin</button>
+    <button data-tab="uc-user" class="whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300">Use Case — User</button>
+    <button data-tab="activity" class="whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300">Activity Diagram</button>
+    <button data-tab="class" class="whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300">Class Diagram</button>
+    <button data-tab="sequence" class="whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300">Sequence Diagram</button>
+  </nav>
+</div>
+
+{# ─── Tab: Use Case Admin ─── #}
+<div id="tab-uc-admin" class="uml-tab">
+  <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 mb-6">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Use Case Diagram — Admin</h2>
+    <pre class="mermaid">
+graph LR
+    admin(("Admin"))
+
+    subgraph system["Sistem Rekomendasi Laptop"]
+      UC1["Login"]
+      UC2["Kelola Katalog Laptop"]
+      UC3["Import CSV Laptop"]
+      UC4["Training Clustering"]
+      UC5["Evaluasi Model"]
+      UC6["Kelola User"]
+      UC7["Dashboard Analitik"]
+      UC8["Export Semua Rekomendasi"]
+    end
+
+    admin --> UC1
+    admin --> UC2
+    admin --> UC3
+    admin --> UC4
+    admin --> UC5
+    admin --> UC6
+    admin --> UC7
+    admin --> UC8
+    </pre>
+  </div>
+
+  <div class="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Definisi Aktor & Use Case</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
+            <th class="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Aktor</th>
+            <th class="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Use Case</th>
+            <th class="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Deskripsi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Login</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Masuk ke sistem menggunakan email/password</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Kelola Katalog Laptop</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">CRUD data laptop, brand, processor, GPU</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Import CSV Laptop</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Bulk import data laptop dari file CSV</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Training Clustering</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Menjalankan K-Means, Elbow, Silhouette untuk membentuk cluster laptop</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Evaluasi Model</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Melihat metrik evaluasi clustering dan precision</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Kelola User</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Mengelola data pengguna dan role</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Lihat Dashboard Analitik</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Melihat statistik: total laptop, cluster, precision, distribusi role</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Export Semua Rekomendasi</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Export seluruh data rekomendasi ke Excel/PDF</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">Admin</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Lihat Diagram UML</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Melihat dokumentasi UML sistem</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# ─── Tab: Use Case User ─── #}
+<div id="tab-uc-user" class="uml-tab hidden">
+  <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 mb-6">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Use Case Diagram — User</h2>
+    <pre class="mermaid">
+graph LR
+    user(("User"))
+
+    subgraph system["Sistem Rekomendasi Laptop"]
+      UC1["Login"]
+      UC2["Input Preferensi"]
+      UC3["Hasil Rekomendasi"]
+      UC4["Detail Rekomendasi"]
+      UC5["Bandingkan Laptop"]
+      UC6["Riwayat"]
+      UC7["Export Rekomendasi"]
+    end
+
+    user --> UC1
+    user --> UC2
+    user --> UC3
+    user --> UC4
+    user --> UC5
+    user --> UC6
+    user --> UC7
+    </pre>
+  </div>
+
+  <div class="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Definisi Aktor & Use Case</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
+            <th class="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Aktor</th>
+            <th class="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Use Case</th>
+            <th class="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Deskripsi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Login</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Masuk ke sistem menggunakan email/password atau Google OAuth</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Input Preferensi</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Memasukkan role, budget, dan minimum spesifikasi laptop</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Lihat Hasil Rekomendasi</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Melihat daftar Top-N laptop yang direkomendasikan</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Lihat Detail Rekomendasi</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Melihat breakdown per-feature (met/exceeded/below) dan skor similarity</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Bandingkan Laptop</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Membandingkan maksimal 3 laptop secara berdampingan</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Lihat Riwayat</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Melihat daftar rekomendasi sebelumnya</td></tr>
+          <tr><td class="px-4 py-2.5 text-slate-900 dark:text-white">User</td><td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">Export Rekomendasi</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">Export riwayat rekomendasi ke Excel/PDF</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# ─── Tab: Activity Diagram ─── #}
+<div id="tab-activity" class="uml-tab hidden">
+  <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 mb-6">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Activity Diagram — Alur Rekomendasi</h2>
+    <pre class="mermaid">
+flowchart TD
+    A([User Login]) --> B{Metode Login}
+    B -->|Email/Password| C[Autentikasi]
+    B -->|Google OAuth| D[OAuth Callback]
+    C --> E[Berhasil?]
+    D --> E
+    E -->|Gagal| B
+    E -->|Berhasil| F[Dashboard]
+    F --> G[Buka Form Preferensi]
+    G --> H[Input Role & Budget]
+    H --> I[Input Minimum Spesifikasi]
+    I --> J[Submit Form]
+    J --> K[Validasi Input]
+    K -->|Valid| L[Pick Cluster berdasarkan Role]
+    K -->|Invalid| I
+    L --> M[Normalisasi Preferensi dengan Scaler]
+    M --> N[Hitung Cosine Similarity]
+    N --> O[Filter: Budget & Minimum Spec]
+    O --> P[Ranking Top-N]
+    P --> Q[Generate Explain Result per Feature]
+    Q --> R[Tampilkan Hasil Rekomendasi]
+    R --> S{User Action}
+    S -->|Lihat Detail| T[Detail + Breakdown Badges]
+    S -->|Bandingkan| U[Compare View max 3]
+    S -->|Export| V[Download Excel/PDF]
+    S -->|Riwayat| W[Daftar Rekomendasi Sebelumnya]
+    </pre>
+  </div>
+</div>
+
+{# ─── Tab: Class Diagram ─── #}
+<div id="tab-class" class="uml-tab hidden">
+  <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 mb-6">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Class Diagram — Model Utama</h2>
+    <pre class="mermaid">
+classDiagram
+    class User {
+        +id int
+        +username str
+        +email str
+    }
+
+    class Profile {
+        +id int
+        +user User
+        +role str
+        +is_admin() bool
+    }
+
+    class Brand {
+        +id int
+        +name str
+    }
+
+    class Processor {
+        +id int
+        +name str
+        +brand str
+        +cores int
+        +clock_speed float
+    }
+
+    class Gpu {
+        +id int
+        +name str
+        +brand str
+        +vram_gb int
+    }
+
+    class Laptop {
+        +id int
+        +name str
+        +brand Brand
+        +processor Processor
+        +gpu Gpu
+        +ram_gb int
+        +storage_gb int
+        +price float
+    }
+
+    class ClusterModel {
+        +id int
+        +name str
+        +is_active bool
+        +scaler_params json
+        +feature_order json
+        +k int
+    }
+
+    class Cluster {
+        +id int
+        +model ClusterModel
+        +cluster_index int
+        +label str
+        +interpretation str
+    }
+
+    class Preference {
+        +id int
+        +user User
+        +role_target str
+        +budget_min float
+        +budget_max float
+        +min_ram int
+        +min_storage int
+        +top_n int
+    }
+
+    class Recommendation {
+        +id int
+        +user User
+        +preference Preference
+        +selected_cluster Cluster
+        +results json
+        +precision_at_k float
+    }
+
+    User "1" -- "1" Profile
+    Laptop "*" -- "1" Brand
+    Laptop "*" -- "1" Processor
+    Laptop "*" -- "1" Gpu
+    ClusterModel "1" -- "*" Cluster
+    Preference "*" -- "1" User
+    Recommendation "*" -- "1" User
+    Recommendation "*" -- "1" Preference
+    Recommendation "*" -- "1" Cluster
+    </pre>
+  </div>
+</div>
+
+{# ─── Tab: Sequence Diagram ─── #}
+<div id="tab-sequence" class="uml-tab hidden">
+  <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 mb-6">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Sequence Diagram — Proses Rekomendasi</h2>
+    <pre class="mermaid">
+sequenceDiagram
+    actor User
+    participant Browser
+    participant Django as Django Views
+    participant Engine as Recommender Engine
+    participant DB as Database
+
+    User->>Browser: Buka /recommend/
+    Browser->>Django: GET RecommendView
+    Django->>DB: Ambil ClusterModel aktif
+    DB-->>Django: ClusterModel + clusters
+    Django-->>Browser: Render form preferensi
+    Browser-->>User: Tampilkan form
+
+    User->>Browser: Isi preferensi + Submit
+    Browser->>Django: POST RecommendView
+    Django->>Django: Validasi PreferenceForm
+    Django->>Engine: generate_recommendation(preference, cluster_model)
+    Engine->>DB: Ambil semua Laptop
+    DB-->>Engine: Laptop queryset
+    Engine->>Engine: Pick cluster berdasarkan role target
+    Engine->>Engine: Normalisasi preferensi dengan scaler_params
+    Engine->>Engine: Hitung cosine similarity
+    Engine->>Engine: Filter budget & minimum spec
+    Engine->>Engine: Ranking Top-N
+    Engine->>Engine: explain_result per laptop
+    Engine-->>Django: Hasil list[dict]
+    Django->>DB: Simpan Recommendation
+    DB-->>Django: OK
+    Django-->>Browser: Render halaman hasil
+    Browser-->>User: Tampilkan rekomendasi + breakdown
+    </pre>
+  </div>
+</div>
+
+{# ─── Tab Switching Script ─── #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('#uml-tabs button');
+  const panels = document.querySelectorAll('.uml-tab');
+  const rendered = new Set(['uc-admin']); // first tab already rendered
+
+  function renderMermaid(container) {
+    const pres = container.querySelectorAll('.mermaid[data-processed]');
+    // re-init any unprocessed diagrams in this tab
+    const unprocessed = container.querySelectorAll('.mermaid:not([data-processed])');
+    if (unprocessed.length) {
+      mermaid.run({nodes: unprocessed});
+    }
+  }
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const target = this.dataset.tab;
+
+      tabs.forEach(t => {
+        t.classList.remove('border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+        t.classList.add('border-transparent', 'text-slate-500');
+      });
+      this.classList.add('border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+      this.classList.remove('border-transparent', 'text-slate-500');
+
+      panels.forEach(p => p.classList.add('hidden'));
+      const panel = document.getElementById('tab-' + target);
+      panel.classList.remove('hidden');
+
+      if (!rendered.has(target)) {
+        rendered.add(target);
+        // small delay so DOM is visible before mermaid measures
+        setTimeout(() => renderMermaid(panel), 50);
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

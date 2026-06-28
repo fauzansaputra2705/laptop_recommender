@@ -1,6 +1,6 @@
 from django import forms
 
-from catalog.models import Brand
+from catalog.models import Brand, SubBrand
 from .models import Preference
 
 INPUT = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800"
@@ -21,6 +21,7 @@ class PreferenceForm(forms.ModelForm):
             "min_screen_inch",
             "min_battery_hours",
             "brand_preference",
+            "sub_brand_preference",
         ]
         widgets = {
             "role_target": forms.Select(attrs={"class": INPUT}),
@@ -37,6 +38,16 @@ class PreferenceForm(forms.ModelForm):
         }
 
     TOP_N_CHOICES = [(3, "3 rekomendasi"), (5, "5 rekomendasi"), (10, "10 rekomendasi")]
+
+    # ponnytail: js on_change filter. add htmx endpoint brand→sub_brand if
+    # scaling needed.
+    sub_brand_preference = forms.ModelChoiceField(
+        queryset=SubBrand.objects.none(),
+        required=False,
+        empty_label="Semua sub-merek",
+        label="Sub-Merek",
+        widget=forms.Select(attrs={"class": INPUT}),
+    )
     top_n = forms.ChoiceField(
         choices=TOP_N_CHOICES,
         initial=5,
@@ -47,3 +58,8 @@ class PreferenceForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["brand_preference"].empty_label = "Semua merek"
+        # If editing existing pref, populate sub_brand choices
+        if self.instance and self.instance.brand_preference_id:
+            self.fields["sub_brand_preference"].queryset = SubBrand.objects.filter(
+                brand=self.instance.brand_preference
+            )

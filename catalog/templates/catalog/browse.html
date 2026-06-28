@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Katalog Laptop{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 py-8">
+  <h1 class="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Katalog Laptop</h1>
+
+  <!-- Filters -->
+  <form method="get" class="mb-6 flex flex-wrap items-end gap-3 rounded-lg bg-white p-4 shadow-sm dark:bg-slate-800">
+    <div>
+      <label for="brand" class="mb-1 block text-xs font-medium text-slate-500">Brand</label>
+      <select name="brand" id="brand" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700">
+        <option value="">Semua</option>
+        {% for b in brands %}
+          <option value="{{ b.pk }}" {% if selected_brand == b.pk|stringformat:"d" %}selected{% endif %}>{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="budget_min" class="mb-1 block text-xs font-medium text-slate-500">Harga Min (Rp)</label>
+      <input type="number" name="budget_min" id="budget_min" value="{{ budget_min }}" class="w-36 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700" inputmode="numeric">
+    </div>
+    <div>
+      <label for="budget_max" class="mb-1 block text-xs font-medium text-slate-500">Harga Maks (Rp)</label>
+      <input type="number" name="budget_max" id="budget_max" value="{{ budget_max }}" class="w-36 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700" inputmode="numeric">
+    </div>
+    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      Filter
+    </button>
+    {% if selected_brand or budget_min or budget_max %}
+      <a href="{% url 'catalog:browse' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">
+        Reset
+      </a>
+    {% endif %}
+  </form>
+
+  <!-- Table -->
+  <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+      <thead class="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+        <tr>
+          <th class="px-4 py-3">Brand</th>
+          <th class="px-4 py-3">Model</th>
+          <th class="px-4 py-3">Processor</th>
+          <th class="px-4 py-3 text-right">RAM</th>
+          <th class="px-4 py-3 text-right">Storage</th>
+          <th class="px-4 py-3 text-right">Harga (Rp)</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for lap in laptops %}
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <td class="px-4 py-2">{{ lap.brand }}</td>
+            <td class="px-4 py-2 font-medium text-slate-900 dark:text-white">{{ lap.model }}</td>
+            <td class="px-4 py-2">{{ lap.processor }}</td>
+            <td class="mono px-4 py-2 text-right">{{ lap.ram_gb }} GB</td>
+            <td class="mono px-4 py-2 text-right">{{ lap.storage_gb }} GB {{ lap.storage_type }}</td>
+            <td class="mono px-4 py-2 text-right">{{ lap.price_idr|floatformat:0 }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-slate-400">Tidak ada laptop ditemukan.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <div class="mt-4 flex justify-center gap-2">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if budget_min %}&budget_min={{ budget_min }}{% endif %}{% if budget_max %}&budget_max={{ budget_max }}{% endif %}" class="rounded-lg border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
+          &laquo; Prev
+        </a>
+      {% endif %}
+      <span class="flex items-center px-3 py-1 text-sm text-slate-500">
+        Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }}
+      </span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if budget_min %}&budget_min={{ budget_min }}{% endif %}{% if budget_max %}&budget_max={{ budget_max }}{% endif %}" class="rounded-lg border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
+          Next &raquo;
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

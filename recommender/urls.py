@@ -11,4 +11,5 @@ urlpatterns = [
     path("compare/", views.CompareView.as_view(), name="compare"),
     path("export/excel/", views.ExportHistoryExcelView.as_view(), name="export_excel"),
     path("export/pdf/", views.ExportHistoryPdfView.as_view(), name="export_pdf"),
+    path("result/<int:pk>/export/pdf/", views.ExportSingleRecommendationPdfView.as_view(), name="export_single_pdf"),
 ]

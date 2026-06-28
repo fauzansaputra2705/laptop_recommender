@@ -115,3 +115,35 @@ class ExportHistoryPdfView(LoginRequiredMixin, View):
             content_type="application/pdf",
             headers={"Content-Disposition": 'attachment; filename="riwayat_rekomendasi.pdf"'},
         )
+
+
+class ExportSingleRecommendationPdfView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        qs = Recommendation.objects.filter(pk=pk)
+        if not request.user.profile.is_admin:
+            qs = qs.filter(user=request.user)
+        if not qs.exists():
+            return HttpResponseBadRequest("Rekomendasi tidak ditemukan.")
+        rows = recommendations_to_rows(qs, include_user=False)
+        content = build_recommendation_pdf(rows, include_user_col=False)
+        return HttpResponse(
+            content,
+            content_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="rekomendasi_{pk}.pdf"'},
+        )
+
+
+class ExportSingleRecommendationPdfView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        qs = Recommendation.objects.filter(pk=pk)
+        if not request.user.profile.is_admin:
+            qs = qs.filter(user=request.user)
+        if not qs.exists():
+            return HttpResponseBadRequest("Rekomendasi tidak ditemukan.")
+        rows = recommendations_to_rows(qs, include_user=False)
+        content = build_recommendation_pdf(rows, include_user_col=False)
+        return HttpResponse(
+            content,
+            content_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="rekomendasi_{pk}.pdf"'},
+        )

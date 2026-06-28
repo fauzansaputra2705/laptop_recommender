@@ -50,6 +50,7 @@ def _pref_dict(pref):
         "storage_type": pref.storage_type or None,
         "vga_type": pref.vga_type or None,
         "brand_preference": str(pref.brand_preference) if pref.brand_preference else None,
+        "sub_brand_preference": str(pref.sub_brand_preference) if pref.sub_brand_preference else None,
     }
 
 
@@ -72,7 +73,7 @@ def generate_recommendation(pref, top_n=5):
     selected_cluster = model.clusters.get(label=cluster_label)
 
     laptops = list(Laptop.objects.filter(cluster_label=cluster_label).select_related(
-        "brand", "processor", "vga"
+        "brand", "sub_brand", "processor", "vga"
     ))
     lap_records = []
     for lap in laptops:

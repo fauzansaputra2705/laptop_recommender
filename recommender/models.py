@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from catalog.models import Brand
+from catalog.models import Brand, SubBrand
 from clustering.models import Cluster, ClusterModel
 
 
@@ -34,6 +34,9 @@ class Preference(models.Model):
     )
     brand_preference = models.ForeignKey(
         Brand, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    sub_brand_preference = models.ForeignKey(
+        SubBrand, on_delete=models.SET_NULL, null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

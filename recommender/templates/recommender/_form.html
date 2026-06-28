@@ -62,8 +62,36 @@
         <label for="{{ form.brand_preference.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Merek</label>
         {{ form.brand_preference }}
       </div>
+      <div id="sub-brand-wrapper">
+        <label for="{{ form.sub_brand_preference.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500">Sub-Merek</label>
+        {{ form.sub_brand_preference }}
+      </div>
     </div>
   </fieldset>
+
+  <script>
+    (function() {
+      const brandSel = document.getElementById('{{ form.brand_preference.id_for_label }}');
+      const subSel = document.getElementById('{{ form.sub_brand_preference.id_for_label }}');
+      if (!brandSel || !subSel) return;
+
+      brandSel.addEventListener('change', function() {
+        const brandId = this.value;
+        subSel.innerHTML = '<option value="">Semua sub-merek</option>';
+        if (!brandId) return;
+        fetch(`/catalog/api/sub-brands/?brand=${brandId}`)
+          .then(r => r.json())
+          .then(data => {
+            data.forEach(sb => {
+              const opt = document.createElement('option');
+              opt.value = sb.id;
+              opt.textContent = sb.name;
+              subSel.appendChild(opt);
+            });
+          });
+      });
+    })();
+  </script>
 
   <div>
     <label for="{{ form.top_n.id_for_label }}" class="mb-1 block text-sm font-medium">Jumlah Rekomendasi</label>

@@ -33,4 +33,7 @@ urlpatterns = [
     # CSV import
     path("import/", views.ImportView.as_view(), name="import"),
     path("import/confirm/", views.ImportConfirmView.as_view(), name="import_confirm"),
+    # Public browse
+    path("browse/", views.LaptopBrowseView.as_view(), name="browse"),
+    path("api/sub-brands/", views.SubBrandApiView.as_view(), name="sub_brands_api"),
 ]

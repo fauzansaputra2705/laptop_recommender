@@ -1,10 +1,13 @@
 from decimal import Decimal
 
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from accounts.mixins import AdminRequiredMixin
 from datatable.mixins import DatatableViewMixin
@@ -12,6 +15,43 @@ from datatable.mixins import DatatableViewMixin
 from .csv_import import parse_and_validate
 from .forms import BrandForm, GpuForm, LaptopForm, ProcessorForm, SubBrandForm
 from .models import Brand, Gpu, Laptop, Processor, SubBrand
+
+
+class SubBrandApiView(LoginRequiredMixin, View):
+    def get(self, request):
+        brand_id = request.GET.get("brand")
+        if not brand_id:
+            return JsonResponse([], safe=False)
+        sbs = SubBrand.objects.filter(brand_id=brand_id).order_by("name").values("id", "name")
+        return JsonResponse(list(sbs), safe=False)
+
+
+class LaptopBrowseView(LoginRequiredMixin, ListView):
+    model = Laptop
+    template_name = "catalog/browse.html"
+    context_object_name = "laptops"
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = Laptop.objects.select_related("brand", "processor", "vga")
+        brand = self.request.GET.get("brand")
+        if brand:
+            qs = qs.filter(brand_id=brand)
+        budget_min = self.request.GET.get("budget_min")
+        if budget_min:
+            qs = qs.filter(price_idr__gte=int(budget_min))
+        budget_max = self.request.GET.get("budget_max")
+        if budget_max:
+            qs = qs.filter(price_idr__lte=int(budget_max))
+        return qs.order_by("brand__name", "model")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["brands"] = Brand.objects.order_by("name")
+        ctx["selected_brand"] = self.request.GET.get("brand", "")
+        ctx["budget_min"] = self.request.GET.get("budget_min", "")
+        ctx["budget_max"] = self.request.GET.get("budget_max", "")
+        return ctx
 
 
 class LaptopListView(AdminRequiredMixin, DatatableViewMixin, ListView):

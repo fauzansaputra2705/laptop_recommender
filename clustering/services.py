@@ -21,6 +21,7 @@ def _lap_to_record(lap):
     """Flatten a Laptop instance into the dict format the engine expects."""
     rec = {f: getattr(lap, f) for f in DIRECT_FIELDS}
     rec["brand"] = str(lap.brand)
+    rec["sub_brand"] = str(lap.sub_brand) if lap.sub_brand else None
     rec["processor_tier"] = lap.processor.tier
     rec["vga_type"] = lap.vga.vga_type
     rec["screen_inch"] = float(rec["screen_inch"])
