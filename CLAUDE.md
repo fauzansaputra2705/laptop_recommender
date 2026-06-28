@@ -24,7 +24,7 @@ Skripsi project. Indonesian UI, English code.
 | `config` | Django settings, root URL conf, ASGI/WSGI |
 | `accounts` | Profile model (admin/user role), signals, Google OAuth |
 | `catalog` | Laptop, Brand, Processor, Gpu models; admin CRUD; CSV bulk import |
-| `clustering` | `engine.py` (preprocess, Elbow, Silhouette, train), `plots.py` (Elbow/Silhouette/distribution/comparison charts), ClusterModel/Cluster, training service + dashboard + evaluate |
+| `clustering` | `engine.py` (preprocess, Elbow, Silhouette, train), `plots.py` (Elbow/Silhouette/distribution/comparison charts), ClusterModel/Cluster, training service + dashboard + evaluate + manual calc (`calc_views.py`) |
 | `recommender` | `engine.py` (pick cluster, cosine sim, precision@k, `explain_result`), `exports.py` (Excel/PDF), Preference/Recommendation, form (configurable top-N) + results (breakdown badges, similarity bar, comparison) + history + permalink |
 | `core` | Landing, about, dashboard (admin analytics charts), base template context; `plots.py` (role/precision/cluster charts) |
 | `datatable` | Reusable HTMX datatable mixin (sort, search, pagination) |
@@ -40,6 +40,7 @@ Skripsi project. Indonesian UI, English code.
 - **Analytics charts**: `core/plots.py` generates base64 PNG — `role_distribution_png`, `precision_trend_png`, `cluster_usage_png`. Injected as `chart_role`, `chart_precision`, `chart_cluster` in admin `DashboardView`. `None` if no data.
 - **Export purity**: `recommender/exports.py` builds Excel/PDF from plain `list[dict]` — no ORM. `recommendations_to_rows(qs)` is the ORM-to-dict bridge.
 - **CSV import flow**: `catalog/csv_import.py` validates rows; session stores `csv_import_rows`; `ImportConfirmView` resolves FK via `get_or_create` then `bulk_create`.
+- **Manual calc pipeline**: `/clustering/manual-calc/` — admin-only page showing step-by-step math for skripsi Chapter 4. Two input modes (pick from DB / manual input). Steps: Preprocessing (raw→scaled→vector), Elbow/Silhouette (K selection), K-Means Centroids, Euclidean Distance (cluster routing), Cosine Similarity (top-N ranking with per-feature dot product breakdown), Precision@K (relevance check per laptop). Uses `preprocess_verbose()`, `pick_cluster_verbose()`, `cosine_verbose()` from engines. Custom template tags in `clustering/templatetags/calc_tags.py` (dict_lookup, list_index, sum_list, mul).
 
 ## Setup
 
@@ -70,6 +71,7 @@ uv run python manage.py generate_dummy_laptops --count 300  # seed data
 | `/catalog/import/` | ImportView | admin |
 | `/clustering/` | DashboardView | admin |
 | `/clustering/evaluate/` | EvaluateView | admin |
+| `/clustering/manual-calc/` | ManualCalcView | admin |
 | `/recommend/` | RecommendView | login |
 | `/recommend/result/<id>/` | RecommendationDetailView | login (own) |
 | `/recommend/compare/` | CompareView | login |

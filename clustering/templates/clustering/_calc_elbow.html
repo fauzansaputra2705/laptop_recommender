@@ -1,0 +1,62 @@
+{% load calc_tags %}
+{# Step 2: Elbow & Silhouette Analysis #}
+<section id="step2" class="mb-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold mr-2">2</span>
+      Elbow Method & Silhouette Analysis
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Menentukan K optimal dengan menguji K=2 hingga K=10. K dengan Silhouette Score tertinggi dipilih.
+    </p>
+  </div>
+  <div class="p-6">
+
+    {# Formula #}
+    <div class="mb-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+      <p class="text-xs font-mono text-slate-700 dark:text-slate-300 mb-1">
+        <span class="font-semibold">Elbow (WCSS):</span> WCSS = Σ Σ ||x<sub>i</sub> − μ<sub>k</sub>||²
+      </p>
+      <p class="text-xs font-mono text-slate-700 dark:text-slate-300">
+        <span class="font-semibold">Silhouette:</span> S(i) = (b(i) − a(i)) / max(a(i), b(i)) &nbsp; [−1, 1]
+      </p>
+    </div>
+
+    {# Results Table #}
+    <div class="overflow-x-auto">
+      <table class="text-xs font-mono w-full">
+        <thead>
+          <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+            <th class="py-2 pr-6">K</th>
+            <th class="py-2 pr-6">WCSS</th>
+            <th class="py-2 pr-6">Silhouette Score</th>
+            <th class="py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for k in step2.k_values %}
+          <tr class="border-b border-slate-100 dark:border-slate-700/50 {% if k == step2.k_optimal %}bg-indigo-50 dark:bg-indigo-900/20{% endif %}">
+            <td class="py-2 pr-6 font-semibold text-slate-900 dark:text-white">K={{ k }}</td>
+            <td class="py-2 pr-6 text-slate-600 dark:text-slate-400">{{ step2.wcss|list_index:forloop.counter0|floatformat:2 }}</td>
+            <td class="py-2 pr-6 text-slate-600 dark:text-slate-400">{{ step2.silhouette|list_index:forloop.counter0|floatformat:4 }}</td>
+            <td class="py-2">
+              {% if k == step2.k_optimal %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
+                  ✓ K Optimal
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
+      <p class="text-sm text-indigo-800 dark:text-indigo-300">
+        <span class="font-semibold">K optimal = {{ step2.k_optimal }}</span>
+        dengan Silhouette Score = {{ step2.silhouette_score|floatformat:4 }}
+      </p>
+    </div>
+  </div>
+</section>

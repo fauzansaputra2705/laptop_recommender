@@ -1,0 +1,112 @@
+{% load calc_tags %}
+{# Step 5: Cosine Similarity #}
+<section id="step5" class="mb-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold mr-2">5</span>
+      Cosine Similarity — Top {{ step5.top_n }} Rekomendasi
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Menghitung kemiripan antara preference vector dan setiap laptop vector di cluster terpilih.
+      Semakin tinggi nilai cosine similarity, semakin mirip laptop dengan preferensi user.
+    </p>
+  </div>
+  <div class="p-6">
+
+    {# Full Formula Breakdown #}
+    <div class="mb-6 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+      <p class="text-xs font-mono text-slate-700 dark:text-slate-300 mb-2 font-semibold">Rumus Cosine Similarity:</p>
+      <div class="pl-4 space-y-1 text-xs font-mono text-slate-600 dark:text-slate-400">
+        <p>cos(A, B) = (A · B) / (||A|| × ||B||)</p>
+        <p class="text-slate-500 mt-2">Dimana:</p>
+        <p>&nbsp;&nbsp;A · B&nbsp;&nbsp; = Σ(A<sub>i</sub> × B<sub>i</sub>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← dot product</p>
+        <p>&nbsp;&nbsp;||A||&nbsp; = √(Σ A<sub>i</sub>²)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← norm preference vector</p>
+        <p>&nbsp;&nbsp;||B||&nbsp; = √(Σ B<sub>i</sub>²)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← norm laptop vector</p>
+      </div>
+    </div>
+
+    {# Preference Vector Reference #}
+    <div class="mb-4 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
+      <p class="text-xs font-mono text-indigo-800 dark:text-indigo-300">
+        <span class="font-semibold">Pref Vector (A):</span> [{{ step5.pref_vector|join:", " }}]
+      </p>
+    </div>
+
+    {# Results #}
+    <div class="space-y-4">
+      {% for r in step5.results %}
+      <div class="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {# Header #}
+        <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold">{{ forloop.counter }}</span>
+            <span class="font-semibold text-sm text-slate-900 dark:text-white">{{ r.name }}</span>
+          </div>
+          <span class="text-sm font-mono font-bold text-indigo-600 dark:text-indigo-400">
+            cos = {{ r.similarity|floatformat:6 }}
+          </span>
+        </div>
+
+        {# Detail #}
+        <div class="px-4 py-3 space-y-3">
+          {# Summary Row #}
+          <div class="grid grid-cols-3 gap-4 text-xs">
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-900/50">
+              <p class="text-slate-500 mb-1">A · B (dot product)</p>
+              <p class="font-mono font-semibold text-slate-900 dark:text-white">{{ r.dot_product|floatformat:6 }}</p>
+            </div>
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-900/50">
+              <p class="text-slate-500 mb-1">||A|| (norm pref)</p>
+              <p class="font-mono font-semibold text-slate-900 dark:text-white">{{ r.norm_a|floatformat:6 }}</p>
+            </div>
+            <div class="p-2 rounded bg-slate-100 dark:bg-slate-900/50">
+              <p class="text-slate-500 mb-1">||B|| (norm laptop)</p>
+              <p class="font-mono font-semibold text-slate-900 dark:text-white">{{ r.norm_b|floatformat:6 }}</p>
+            </div>
+          </div>
+
+          {# Calculation formula #}
+          <div class="p-3 rounded bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+            <p class="text-xs font-mono text-slate-600 dark:text-slate-400">
+              cos(A, B) = {{ r.dot_product|floatformat:6 }} / ({{ r.norm_a|floatformat:6 }} × {{ r.norm_b|floatformat:6 }})
+              = {{ r.dot_product|floatformat:6 }} / {{ r.norm_a|mul:r.norm_b|floatformat:6 }}
+              = <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ r.similarity|floatformat:6 }}</span>
+            </p>
+          </div>
+
+          {# Per-feature dot product breakdown #}
+          <details class="group">
+            <summary class="cursor-pointer text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+              Lihat detail per-feature dot product
+            </summary>
+            <div class="mt-2 overflow-x-auto">
+              <table class="text-[10px] font-mono w-full">
+                <thead>
+                  <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+                    <th class="py-1 pr-3">Fitur</th>
+                    <th class="py-1 pr-3">A<sub>i</sub> (Pref)</th>
+                    <th class="py-1 pr-3">B<sub>i</sub> (Laptop)</th>
+                    <th class="py-1 pr-3">A<sub>i</sub> × B<sub>i</sub></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for fp in r.feature_products %}
+                  <tr class="border-b border-slate-100 dark:border-slate-700/50">
+                    <td class="py-1 pr-3 text-slate-500">Fitur {{ forloop.counter }}</td>
+                    <td class="py-1 pr-3">{{ step5.pref_vector|list_index:forloop.counter0|floatformat:4 }}</td>
+                    <td class="py-1 pr-3">{{ r.vector|list_index:forloop.counter0|floatformat:4 }}</td>
+                    <td class="py-1 pr-3 font-semibold">{{ fp|floatformat:6 }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-sm text-slate-500 dark:text-slate-400 italic">Tidak ada laptop di cluster terpilih.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>

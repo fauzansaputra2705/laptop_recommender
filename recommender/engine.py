@@ -118,4 +118,62 @@ def is_relevant(laptop, pref):
         return False
     if pref.get("brand_preference") and laptop["brand"] != pref["brand_preference"]:
         return False
+    if pref.get("sub_brand_preference") and laptop.get("sub_brand") != pref["sub_brand_preference"]:
+        return False
     return True
+
+
+def pick_cluster_verbose(pref_vector, centroids):
+    """Same as pick_cluster() but returns per-centroid distance breakdown.
+
+    Returns list of dicts: {index, centroid, distance, is_closest}
+    """
+    pv = np.asarray(pref_vector, dtype=float)
+    results = []
+    for i, c in enumerate(centroids):
+        cv = np.asarray(c, dtype=float)
+        diff = pv - cv
+        sq_diff = diff ** 2
+        dist = float(np.sqrt(np.sum(sq_diff)))
+        results.append({
+            "index": i,
+            "centroid": [round(v, 6) for v in c],
+            "sq_diff": [round(v, 6) for v in sq_diff],
+            "distance": round(dist, 6),
+        })
+    closest_idx = int(np.argmin([r["distance"] for r in results]))
+    results[closest_idx]["is_closest"] = True
+    for r in results:
+        r.setdefault("is_closest", False)
+    return results
+
+
+def cosine_verbose(pref_vector, laptops, n=5):
+    """Same as cosine_topn() but returns per-laptop similarity breakdown.
+
+    Returns list of dicts with: name, id, dot_product, norm_a, norm_b, similarity, feature_products
+    """
+    if not laptops:
+        return []
+    pv = np.asarray(pref_vector, dtype=float)
+    norm_a = float(np.sqrt(np.sum(pv ** 2)))
+
+    results = []
+    for lap in laptops:
+        lv = np.asarray(lap["vector"], dtype=float)
+        norm_b = float(np.sqrt(np.sum(lv ** 2)))
+        dot = float(np.dot(pv, lv))
+        sim = dot / (norm_a * norm_b) if norm_a > 0 and norm_b > 0 else 0.0
+        # Per-feature product breakdown
+        feature_products = [round(float(a * b), 6) for a, b in zip(pv, lv)]
+        results.append({
+            **lap,
+            "dot_product": round(dot, 6),
+            "norm_a": round(norm_a, 6),
+            "norm_b": round(norm_b, 6),
+            "similarity": round(sim, 6),
+            "feature_products": feature_products,
+        })
+
+    results.sort(key=lambda d: d["similarity"], reverse=True)
+    return results[:n]

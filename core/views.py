@@ -190,25 +190,5 @@ class RecommendationListView(AdminRequiredMixin, DatatableViewMixin, ListView):
         ).order_by("-created_at")
 
 
-class ExportAllRecommendationsExcelView(AdminRequiredMixin, View):
-    def get(self, request):
-        qs = Recommendation.objects.all()
-        rows = recommendations_to_rows(qs, include_user=True)
-        content = build_recommendation_excel(rows, include_user_col=True)
-        return HttpResponse(
-            content,
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": 'attachment; filename="semua_rekomendasi.xlsx"'},
-        )
-
-
-class ExportAllRecommendationsPdfView(AdminRequiredMixin, View):
-    def get(self, request):
-        qs = Recommendation.objects.all()
-        rows = recommendations_to_rows(qs, include_user=True)
-        content = build_recommendation_pdf(rows, include_user_col=True)
-        return HttpResponse(
-            content,
-            content_type="application/pdf",
-            headers={"Content-Disposition": 'attachment; filename="semua_rekomendasi.pdf"'},
-        )
+class UsecaseView(AdminRequiredMixin, TemplateView):
+    template_name = "core/usecase.html"

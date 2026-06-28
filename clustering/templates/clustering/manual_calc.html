@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Perhitungan Manual — Clustering{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8 px-4">
+  {# ─── Header ─── #}
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40">
+        <i class="fa-solid fa-calculator text-indigo-600 dark:text-indigo-400 text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Perhitungan Manual</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Pipeline Rekomendasi — Step-by-Step untuk Bab 4 Skripsi</p>
+      </div>
+    </div>
+    {% if model %}
+    <div class="mt-3 inline-flex items-center gap-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 px-3 py-1.5">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="text-xs font-medium text-indigo-800 dark:text-indigo-300">
+        Model Aktif: #{{ model.pk }} — k={{ model.k_optimal }}, Silhouette={{ model.silhouette_score|floatformat:4 }}
+      </span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if error %}
+    <div class="mb-6 flex items-start gap-3 p-4 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-700">
+      <i class="fa-solid fa-circle-exclamation text-red-500 mt-0.5"></i>
+      <p class="text-sm text-red-800 dark:text-red-300">{{ error }}</p>
+    </div>
+  {% endif %}
+
+  {# ─── Input Form ─── #}
+  <div class="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+
+    {# Tab Headers #}
+    <div class="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50" id="tabs">
+      <button onclick="switchTab('db')"
+              class="tab-btn flex-1 px-4 py-3.5 text-sm font-semibold text-center border-b-2 transition-colors"
+              id="tab-db"
+              data-active-class="border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800"
+              data-inactive-class="border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
+        <i class="fa-solid fa-database mr-2"></i>Dari Database
+      </button>
+      <button onclick="switchTab('manual')"
+              class="tab-btn flex-1 px-4 py-3.5 text-sm font-semibold text-center border-b-2 transition-colors"
+              id="tab-manual"
+              data-active-class="border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800"
+              data-inactive-class="border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
+        <i class="fa-solid fa-keyboard mr-2"></i>Input Manual
+      </button>
+    </div>
+
+    <form method="post" class="p-6 space-y-6">
+      {% csrf_token %}
+      <input type="hidden" name="mode" id="input-mode" value="db">
+
+      {# ─── DB Tab ─── #}
+      <div id="panel-db" class="tab-panel space-y-5">
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+          <legend class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">
+            <i class="fa-solid fa-database text-indigo-500"></i>
+            Pilih Data dari Database
+          </legend>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Pilih preference user yang sudah ada dan satu laptop untuk demo preprocessing.
+            Sistem akan menampilkan step-by-step perhitungan menggunakan data aktual.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {% for field in db_form %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                {{ field.label }} <span class="text-red-500">*</span>
+              </label>
+              {{ field }}
+              {% if field.help_text %}
+              <p class="mt-1 text-xs text-slate-400">{{ field.help_text }}</p>
+              {% endif %}
+              {% if field.errors %}
+              <p class="mt-1 text-xs text-red-600 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation text-[10px]"></i>{{ field.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      {# ─── Manual Tab ─── #}
+      <div id="panel-manual" class="tab-panel hidden space-y-6">
+
+        {# Preferensi User #}
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">
+            <i class="fa-solid fa-user-gear text-indigo-500"></i>
+            Preferensi User
+          </h3>
+
+          <fieldset class="rounded-md border border-slate-200 dark:border-slate-600 p-4 mb-4">
+            <legend class="px-1 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Peran & Budget</legend>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {% for field in input_form %}
+                {% if field.name == "role_target" or field.name == "budget_min_idr" or field.name == "budget_max_idr" %}
+                <div>
+                  <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+                  {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+                </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </fieldset>
+
+          <fieldset class="rounded-md border border-slate-200 dark:border-slate-600 p-4">
+            <legend class="px-1 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Spesifikasi Minimum</legend>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {% for field in input_form %}
+                {% if field.name != "role_target" and field.name != "budget_min_idr" and field.name != "budget_max_idr" and not field.name|slice:":3" == "lap" %}
+                <div>
+                  <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+                  {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+                </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        {# Laptop Specs #}
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">
+            <i class="fa-solid fa-laptop text-emerald-500"></i>
+            Spesifikasi Laptop
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Masukkan spesifikasi laptop untuk demo preprocessing. Data ini hanya untuk menunjukkan proses konversi ke vektor fitur.
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for field in input_form %}
+              {% if field.name|slice:":3" == "lap" %}
+              <div>
+                <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+              </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      {# ─── Submit ─── #}
+      <div class="flex items-center gap-3 pt-2">
+        <button type="submit"
+                class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all active:scale-[0.98]">
+          <i class="fa-solid fa-calculator"></i>
+          Hitung Perhitungan Manual
+        </button>
+        <span class="text-xs text-slate-400 dark:text-slate-500">
+          <i class="fa-solid fa-info-circle mr-1"></i>
+          Hasil ditampilkan di bawah sebagai step-by-step
+        </span>
+      </div>
+    </form>
+  </div>
+
+  {% if has_result %}
+    {# ─── Pipeline Indicator ─── #}
+    <div class="mb-6 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+      <i class="fa-solid fa-arrow-down text-indigo-400"></i>
+      <span>Scroll ke bawah untuk melihat hasil perhitungan</span>
+    </div>
+
+    {# ─── Quick Nav ─── #}
+    <nav class="mb-8 flex flex-wrap gap-2">
+      <a href="#step1" class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">1</span>
+        Preprocessing
+      </a>
+      <a href="#step2" class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">2</span>
+        Elbow & Silhouette
+      </a>
+      <a href="#step3" class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">3</span>
+        K-Means Centroids
+      </a>
+      <a href="#step4" class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">4</span>
+        Euclidean Distance
+      </a>
+      <a href="#step5" class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">5</span>
+        Cosine Similarity
+      </a>
+      <a href="#step6" class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+        <span class="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">6</span>
+        Precision@K
+      </a>
+    </nav>
+
+    {% include "clustering/_calc_preprocess.html" %}
+    {% include "clustering/_calc_elbow.html" %}
+    {% include "clustering/_calc_kmeans.html" %}
+    {% include "clustering/_calc_euclidean.html" %}
+    {% include "clustering/_calc_cosine.html" %}
+    {% include "clustering/_calc_precision.html" %}
+  {% endif %}
+</div>
+
+<script>
+function switchTab(tab) {
+  document.getElementById('input-mode').value = tab;
+  document.getElementById('panel-db').classList.toggle('hidden', tab !== 'db');
+  document.getElementById('panel-manual').classList.toggle('hidden', tab !== 'manual');
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const isActive = btn.id === 'tab-' + tab;
+    btn.classList.remove(...btn.dataset.inactiveClass.split(' '));
+    btn.classList.remove(...btn.dataset.activeClass.split(' '));
+    btn.classList.add(...(isActive ? btn.dataset.activeClass : btn.dataset.inactiveClass).split(' '));
+  });
+}
+
+switchTab('db');
+</script>
+{% endblock %}

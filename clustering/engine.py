@@ -96,3 +96,71 @@ def train(matrix, k):
         "silhouette_score": float(silhouette_score(X, km.labels_)),
         "wcss": float(km.inertia_),
     }
+
+
+def preprocess_verbose(records, scaler_params, feature_order):
+    """Same as preprocess() but returns per-row intermediate values for manual calc display.
+
+    Returns dict with:
+    - matrix: the feature matrix
+    - verbose_rows: list of dicts per record with raw, clipped, scaled, onehot, final_vector
+    - feature_order: the feature order used
+    - scaler_params: the scaler params used
+    - onehot_weight: the ONEHOT_WEIGHT value
+    - numeric_cols: list of numeric column names
+    - onehot_cols: list of one-hot column names with categories
+    """
+    mins = {col: scaler_params["numeric"][col]["min"] for col in NUMERIC}
+    maxs = {col: scaler_params["numeric"][col]["max"] for col in NUMERIC}
+    categories = scaler_params["categories"]
+
+    matrix = []
+    verbose_rows = []
+
+    for r in records:
+        row = []
+        verbose = {"raw": {}, "clipped": {}, "scaled": {}, "onehot": {}, "final_vector": []}
+
+        # Raw values
+        for col in NUMERIC:
+            verbose["raw"][col] = float(r[col])
+        for col in ONEHOT:
+            verbose["raw"][col] = str(r[col])
+
+        # Numeric: raw → scaled (single record, no IQR clipping needed)
+        for col in NUMERIC:
+            raw_val = float(r[col])
+            verbose["clipped"][col] = raw_val
+            span = maxs[col] - mins[col]
+            scaled = (raw_val - mins[col]) / span if span else 0.0
+            scaled = min(max(scaled, 0.0), 1.0)
+            verbose["scaled"][col] = round(scaled, 6)
+            row.append(scaled)
+
+        # One-hot encoding
+        for col in ONEHOT:
+            for cat in categories[col]:
+                key = f"{col}={cat}"
+                val = ONEHOT_WEIGHT if str(r[col]) == cat else 0.0
+                verbose["onehot"][key] = round(val, 6)
+                row.append(val)
+
+        verbose["final_vector"] = [round(v, 6) for v in row]
+        matrix.append(row)
+        verbose_rows.append(verbose)
+
+    # Build onehot column info for template
+    onehot_cols = []
+    for col in ONEHOT:
+        for cat in categories[col]:
+            onehot_cols.append({"field": col, "category": cat, "label": f"{col}={cat}"})
+
+    return {
+        "matrix": matrix,
+        "verbose_rows": verbose_rows,
+        "feature_order": feature_order,
+        "scaler_params": scaler_params,
+        "onehot_weight": round(ONEHOT_WEIGHT, 6),
+        "numeric_cols": list(NUMERIC),
+        "onehot_cols": onehot_cols,
+    }

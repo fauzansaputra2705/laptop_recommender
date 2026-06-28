@@ -1,0 +1,139 @@
+{% load calc_tags %}
+{# Step 6: Precision@K & Evaluasi Per Laptop #}
+<section id="step6" class="mb-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold mr-2">6</span>
+      Precision@K & Evaluasi Relevansi
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Mengevaluasi apakah setiap rekomendasi memenuhi minimum spesifikasi user.
+      Precision@K = jumlah laptop relevan di Top-K / K.
+    </p>
+  </div>
+  <div class="p-6">
+
+    {# Formula #}
+    <div class="mb-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+      <p class="text-xs font-mono text-slate-700 dark:text-slate-300 mb-2 font-semibold">Rumus Precision@K:</p>
+      <div class="pl-4 space-y-1 text-xs font-mono text-slate-600 dark:text-slate-400">
+        <p>Precision@K = |{laptop relevan di Top-K}| / K</p>
+        <p class="text-slate-500 mt-2">Laptop relevan = memenuhi SEMUA minimum spesifikasi user DAN dalam rentang budget:</p>
+        <p>&nbsp;&nbsp;• ram_gb ≥ min_ram_gb</p>
+        <p>&nbsp;&nbsp;• processor_tier ≥ min_processor_tier</p>
+        <p>&nbsp;&nbsp;• storage_gb ≥ min_storage_gb</p>
+        <p>&nbsp;&nbsp;• price_idr dalam rentang budget [min, max]</p>
+        <p>&nbsp;&nbsp;• (dan spesifikasi lainnya sesuai input)</p>
+      </div>
+    </div>
+
+    {# Results Table #}
+    <div class="overflow-x-auto mb-6">
+      <table class="text-xs w-full">
+        <thead>
+          <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+            <th class="py-2 pr-3 font-mono">Rank</th>
+            <th class="py-2 pr-3">Laptop</th>
+            <th class="py-2 pr-3 font-mono">Similarity</th>
+            {% for feat, _ in step6.rows.0.breakdown.items %}
+            <th class="py-2 pr-3 text-center">{{ feat }}</th>
+            {% endfor %}
+            <th class="py-2 text-center">Relevan?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in step6.rows %}
+          <tr class="border-b border-slate-100 dark:border-slate-700/50 {% if row.relevant %}bg-emerald-50/50 dark:bg-emerald-900/10{% else %}bg-red-50/50 dark:bg-red-900/10{% endif %}">
+            <td class="py-2 pr-3 font-mono font-semibold text-slate-900 dark:text-white">{{ row.rank }}</td>
+            <td class="py-2 pr-3 text-slate-900 dark:text-white max-w-[200px] truncate" title="{{ row.name }}">{{ row.name }}</td>
+            <td class="py-2 pr-3 font-mono text-slate-600 dark:text-slate-400">{{ row.similarity|floatformat:4 }}</td>
+            {% for feat, info in row.breakdown.items %}
+            <td class="py-2 pr-3 text-center">
+              {% if info.status == "met" %}
+                <span title="{{ feat }}: {{ info.actual }} ≥ {{ info.minimum }}" class="text-emerald-600 dark:text-emerald-400">✓</span>
+              {% elif info.status == "exceeded" %}
+                <span title="{{ feat }}: {{ info.actual }} > {{ info.minimum }}" class="text-blue-600 dark:text-blue-400">✓+</span>
+              {% else %}
+                <span title="{{ feat }}: {{ info.actual }} < {{ info.minimum }}" class="text-red-600 dark:text-red-400">✗</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+            <td class="py-2 text-center">
+              {% if row.relevant %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">✓ Ya</span>
+              {% else %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">✗ Tidak</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# Detail Breakdown Per Laptop #}
+    <div class="space-y-4 mb-6">
+      {% for row in step6.rows %}
+      <div class="rounded-lg border {% if row.relevant %}border-emerald-200 dark:border-emerald-800{% else %}border-red-200 dark:border-red-800{% endif %} overflow-hidden">
+        <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-sm text-slate-900 dark:text-white">#{{ row.rank }} {{ row.name }}</span>
+          </div>
+          {% if row.relevant %}
+            <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">RELEVAN</span>
+          {% else %}
+            <span class="text-xs font-semibold text-red-700 dark:text-red-300">TIDAK RELEVAN</span>
+          {% endif %}
+        </div>
+        <div class="px-4 py-3">
+          <table class="text-xs font-mono w-full">
+            <thead>
+              <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+                <th class="py-1 pr-4">Fitur</th>
+                <th class="py-1 pr-4">Laptop</th>
+                <th class="py-1 pr-4">Minimum</th>
+                <th class="py-1 pr-4">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for feat, info in row.breakdown.items %}
+              <tr class="border-b border-slate-100 dark:border-slate-700/50">
+                <td class="py-1 pr-4 font-medium text-slate-900 dark:text-white">{{ feat }}</td>
+                <td class="py-1 pr-4 text-slate-600 dark:text-slate-400">
+                  {% if info.actual|floatformat:0 == info.actual|floatformat:0 %}{{ info.actual|floatformat:0 }}{% else %}{{ info.actual }}{% endif %}
+                </td>
+                <td class="py-1 pr-4 text-slate-600 dark:text-slate-400">
+                  {% if info.minimum|floatformat:0 == info.minimum|floatformat:0 %}{{ info.minimum|floatformat:0 }}{% else %}{{ info.minimum }}{% endif %}
+                </td>
+                <td class="py-1 pr-4">
+                  {% if info.status == "met" %}
+                    <span class="text-emerald-600 dark:text-emerald-400">✓ Memenuhi</span>
+                  {% elif info.status == "exceeded" %}
+                    <span class="text-blue-600 dark:text-blue-400">✓ Melebihi</span>
+                  {% else %}
+                    <span class="text-red-600 dark:text-red-400">✗ Di bawah minimum</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {# Precision Result #}
+    <div class="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
+      <p class="text-sm text-indigo-800 dark:text-indigo-300 mb-2">
+        <span class="font-bold text-lg">Precision@{{ step6.top_n }} = {{ step6.relevant_count }} / {{ step6.top_n }} = {{ step6.precision_pct }}%</span>
+      </p>
+      <p class="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
+        Dari {{ step6.top_n }} rekomendasi teratas, <strong>{{ step6.relevant_count }} laptop</strong> memenuhi semua minimum spesifikasi user.
+        {% if step6.relevant_count < step6.top_n %}
+        Laptop pada peringkat tertentu mungkin tidak relevan karena Cosine Similarity mengukur kemiripan vektor fitur secara keseluruhan, bukan kepatuhan terhadap batas minimum — algoritme memprioritaskan laptop yang paling mirip secara keseluruhan dengan preferensi user, meskipun beberapa spesifikasi spesifik di bawah threshold.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,118 @@
+{% load calc_tags %}
+{# Step 1: Preprocessing #}
+<section id="step1" class="mb-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold mr-2">1</span>
+      Preprocessing Data
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Data diubah ke vektor numerik: numerik → MinMax scaling [0,1], kategorikal → one-hot encoding × √½.
+      Scaler params diambil dari model training aktif.
+    </p>
+  </div>
+  <div class="p-6 space-y-6">
+
+    {# Scaler Params #}
+    <div>
+      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Scaler Parameters (dari training)</h3>
+      <div class="overflow-x-auto">
+        <table class="text-xs font-mono w-full">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+              <th class="py-2 pr-4">Fitur</th>
+              <th class="py-2 pr-4">Min</th>
+              <th class="py-2 pr-4">Max</th>
+              <th class="py-2 pr-4">Rumus</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for col in step1.numeric_cols %}
+            <tr class="border-b border-slate-100 dark:border-slate-700/50">
+              <td class="py-1.5 pr-4 font-medium text-slate-900 dark:text-white">{{ col }}</td>
+              <td class="py-1.5 pr-4 text-slate-600 dark:text-slate-400">{{ step1.scaler_params.numeric|dict_lookup:col|dict_lookup:"min"|floatformat:2 }}</td>
+              <td class="py-1.5 pr-4 text-slate-600 dark:text-slate-400">{{ step1.scaler_params.numeric|dict_lookup:col|dict_lookup:"max"|floatformat:2 }}</td>
+              <td class="py-1.5 pr-4 text-slate-500">(v − min) / (max − min)</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">One-hot weight = 1/√2 ≈ {{ step1.onehot_weight }} (agar swap kategori ≈ 1.0 dalam Euclidean distance)</p>
+    </div>
+
+    {# Preference Vector #}
+    <div>
+      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Preferensi User → Feature Vector</h3>
+      <div class="overflow-x-auto">
+        <table class="text-xs font-mono w-full">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+              <th class="py-2 pr-4">Fitur</th>
+              <th class="py-2 pr-4">Raw</th>
+              <th class="py-2 pr-4">Scaled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for col in step1.numeric_cols %}
+            <tr class="border-b border-slate-100 dark:border-slate-700/50">
+              <td class="py-1.5 pr-4 font-medium text-slate-900 dark:text-white">{{ col }}</td>
+              <td class="py-1.5 pr-4 text-slate-600 dark:text-slate-400">{{ step1.pref.raw|dict_lookup:col|floatformat:2 }}</td>
+              <td class="py-1.5 pr-4 text-indigo-600 dark:text-indigo-400 font-semibold">{{ step1.pref.scaled|dict_lookup:col|floatformat:6 }}</td>
+            </tr>
+            {% endfor %}
+            {% for col in step1.onehot_cols %}
+            <tr class="border-b border-slate-100 dark:border-slate-700/50">
+              <td class="py-1.5 pr-4 font-medium text-slate-900 dark:text-white">{{ col.label }}</td>
+              <td class="py-1.5 pr-4 text-slate-600 dark:text-slate-400">{% if step1.pref.onehot|dict_lookup:col.label %}✓{% else %}✗{% endif %}</td>
+              <td class="py-1.5 pr-4 text-indigo-600 dark:text-indigo-400 font-semibold">{{ step1.pref.onehot|dict_lookup:col.label|floatformat:6 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
+        <p class="text-xs font-mono text-indigo-800 dark:text-indigo-300">
+          <span class="font-semibold">Pref Vector:</span> [{{ step1.pref.final_vector|join:", " }}]
+        </p>
+      </div>
+    </div>
+
+    {# Laptop Vector #}
+    <div>
+      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Laptop → Feature Vector</h3>
+      <div class="overflow-x-auto">
+        <table class="text-xs font-mono w-full">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-200 dark:border-slate-700">
+              <th class="py-2 pr-4">Fitur</th>
+              <th class="py-2 pr-4">Raw</th>
+              <th class="py-2 pr-4">Scaled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for col in step1.numeric_cols %}
+            <tr class="border-b border-slate-100 dark:border-slate-700/50">
+              <td class="py-1.5 pr-4 font-medium text-slate-900 dark:text-white">{{ col }}</td>
+              <td class="py-1.5 pr-4 text-slate-600 dark:text-slate-400">{{ step1.lap.raw|dict_lookup:col|floatformat:2 }}</td>
+              <td class="py-1.5 pr-4 text-emerald-600 dark:text-emerald-400 font-semibold">{{ step1.lap.scaled|dict_lookup:col|floatformat:6 }}</td>
+            </tr>
+            {% endfor %}
+            {% for col in step1.onehot_cols %}
+            <tr class="border-b border-slate-100 dark:border-slate-700/50">
+              <td class="py-1.5 pr-4 font-medium text-slate-900 dark:text-white">{{ col.label }}</td>
+              <td class="py-1.5 pr-4 text-slate-600 dark:text-slate-400">{% if step1.lap.onehot|dict_lookup:col.label %}✓{% else %}✗{% endif %}</td>
+              <td class="py-1.5 pr-4 text-emerald-600 dark:text-emerald-400 font-semibold">{{ step1.lap.onehot|dict_lookup:col.label|floatformat:6 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+        <p class="text-xs font-mono text-emerald-800 dark:text-emerald-300">
+          <span class="font-semibold">Laptop Vector:</span> [{{ step1.lap.final_vector|join:", " }}]
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
